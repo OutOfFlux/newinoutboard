@@ -457,14 +457,28 @@
     }
 
     // --- Format timestamp ---
-    function formatTimestamp(ts) {
+    function formatAbsoluteTimestamp(ts) {
       if (!ts) return '';
-      // ts comes as "YYYY-MM-DD HH:MM:SS" in UTC
       const d = new Date(ts + 'Z');
       return d.toLocaleString(undefined, {
         month: 'short', day: 'numeric',
         hour: 'numeric', minute: '2-digit',
       });
+    }
+
+    function formatRelativeTimestamp(ts) {
+      if (!ts) return '';
+      const d = new Date(ts + 'Z');
+      const now = new Date();
+      const diffMs = now - d;
+      const diffMin = Math.floor(diffMs / 60000);
+      const diffHrs = Math.floor(diffMs / 3600000);
+      const diffDays = Math.floor(diffMs / 86400000);
+
+      if (diffMin < 1) return 'Just now';
+      if (diffMin < 60) return `${diffMin} min ago`;
+      if (diffHrs < 24) return `${diffHrs} hr${diffHrs > 1 ? 's' : ''} ago`;
+      return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
     }
 
     // --- Render table ---
@@ -521,7 +535,8 @@
         tdChanged.className = 'col-last-changed';
         const tsSpan = document.createElement('span');
         tsSpan.className = 'timestamp';
-        tsSpan.textContent = formatTimestamp(emp.last_changed);
+        tsSpan.textContent = formatRelativeTimestamp(emp.last_changed);
+        tsSpan.title = formatAbsoluteTimestamp(emp.last_changed);
         tdChanged.appendChild(tsSpan);
         tr.appendChild(tdChanged);
 
@@ -593,6 +608,9 @@
 
     // Initialize arrows
     updateSortArrows();
+
+    // Refresh relative timestamps every 60 seconds
+    setInterval(render, 60000);
   </script>
 </body>
 </html>
