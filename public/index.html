@@ -139,6 +139,14 @@
       background: #fafbfc;
     }
 
+    tbody tr.row-red {
+      background: #fee2e2;
+    }
+
+    tbody tr.row-red:hover {
+      background: #fecaca;
+    }
+
     /* Status badge */
     .badge {
       display: inline-block;
@@ -468,6 +476,7 @@
       list.forEach(emp => {
         const tr = document.createElement('tr');
         const color = statusColor(emp.status);
+        if (color === 'red') tr.classList.add('row-red');
 
         // Name
         const tdName = document.createElement('td');
