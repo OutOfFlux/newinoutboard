@@ -546,6 +546,10 @@
         updateEmployee(emp.id, { status: sel.value });
         // Optimistic local update
         emp.status = sel.value;
+        if (sel.value === 'IN') {
+          emp.comment = '';
+          emp.estimated_return = '';
+        }
         render();
       });
 

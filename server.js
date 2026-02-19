@@ -45,12 +45,20 @@ app.put('/employees/:id', (req, res) => {
     if (status !== undefined) {
       fields.push('status = @status');
       values.status = status;
+
+      // Clear comment and estimated return when status is set back to IN
+      if (status === 'IN') {
+        fields.push('comment = @comment');
+        values.comment = '';
+        fields.push('estimated_return = @estimated_return');
+        values.estimated_return = '';
+      }
     }
-    if (comment !== undefined) {
+    if (comment !== undefined && values.comment === undefined) {
       fields.push('comment = @comment');
       values.comment = comment;
     }
-    if (estimated_return !== undefined) {
+    if (estimated_return !== undefined && values.estimated_return === undefined) {
       fields.push('estimated_return = @estimated_return');
       values.estimated_return = estimated_return;
     }
