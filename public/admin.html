@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin — In/Out Board</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f0f2f5;
+      color: #1a1a1a;
+      line-height: 1.5;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .header h1 { font-size: 1.5rem; font-weight: 700; }
+
+    .header-links {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .header-links a {
+      color: #3b82f6;
+      text-decoration: none;
+      font-size: 0.875rem;
+      font-weight: 500;
+    }
+
+    .header-links a:hover { text-decoration: underline; }
+
+    /* Add employee form */
+    .add-form {
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+      padding: 20px;
+      margin-bottom: 24px;
+    }
+
+    .add-form h2 {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 14px;
+    }
+
+    .form-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: flex-end;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      flex: 1;
+      min-width: 160px;
+    }
+
+    .form-group label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #6b7280;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .form-group input,
+    .form-group select {
+      padding: 8px 12px;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      font-size: 0.875rem;
+      background: #fff;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus {
+      outline: none;
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 2px rgba(59,130,246,0.15);
+    }
+
+    .btn {
+      padding: 8px 18px;
+      border: none;
+      border-radius: 6px;
+      font-size: 0.875rem;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background 0.15s, opacity 0.15s;
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .btn-primary {
+      background: #3b82f6;
+      color: #fff;
+    }
+
+    .btn-primary:hover:not(:disabled) { background: #2563eb; }
+
+    .btn-danger {
+      background: #fee2e2;
+      color: #b91c1c;
+    }
+
+    .btn-danger:hover:not(:disabled) { background: #fecaca; }
+
+    .btn-ghost {
+      background: #f3f4f6;
+      color: #374151;
+    }
+
+    .btn-ghost:hover:not(:disabled) { background: #e5e7eb; }
+
+    .btn-sm {
+      padding: 5px 12px;
+      font-size: 0.8rem;
+    }
+
+    /* Employee list */
+    .employee-list {
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+
+    .employee-list h2 {
+      font-size: 1rem;
+      font-weight: 600;
+      padding: 16px 20px 12px;
+    }
+
+    .emp-count {
+      font-weight: 400;
+      color: #6b7280;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.875rem;
+    }
+
+    thead th {
+      text-align: left;
+      padding: 10px 14px;
+      background: #f9fafb;
+      border-bottom: 2px solid #e5e7eb;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    tbody td {
+      padding: 10px 14px;
+      border-bottom: 1px solid #f0f0f0;
+      vertical-align: middle;
+    }
+
+    tbody tr:hover {
+      background: #fafbfc;
+    }
+
+    .actions-cell {
+      display: flex;
+      gap: 6px;
+      flex-wrap: nowrap;
+    }
+
+    /* Inline edit */
+    td input[type="text"],
+    td select {
+      width: 100%;
+      padding: 4px 8px;
+      border: 2px solid #3b82f6;
+      border-radius: 4px;
+      font-size: 0.875rem;
+      outline: none;
+    }
+
+    /* Badge */
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .badge.green { background: #dcfce7; color: #15803d; }
+    .badge.red { background: #fee2e2; color: #b91c1c; }
+
+    /* Toast notification */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      padding: 12px 20px;
+      background: #1a1a1a;
+      color: #fff;
+      border-radius: 8px;
+      font-size: 0.875rem;
+      font-weight: 500;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      transform: translateY(80px);
+      opacity: 0;
+      transition: all 0.3s ease;
+      z-index: 1000;
+    }
+
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    .toast.error {
+      background: #dc2626;
+    }
+
+    /* Delete confirmation */
+    .confirm-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.35);
+      z-index: 999;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .confirm-overlay.show { display: flex; }
+
+    .confirm-dialog {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+      padding: 24px;
+      max-width: 400px;
+      width: 90%;
+    }
+
+    .confirm-dialog h3 {
+      font-size: 1rem;
+      margin-bottom: 8px;
+    }
+
+    .confirm-dialog p {
+      font-size: 0.875rem;
+      color: #6b7280;
+      margin-bottom: 20px;
+    }
+
+    .confirm-actions {
+      display: flex;
+      gap: 8px;
+      justify-content: flex-end;
+    }
+
+    /* Mobile */
+    @media (max-width: 640px) {
+      .container { padding: 12px; }
+      .form-group { min-width: 100%; }
+      thead th, tbody td { padding: 8px 8px; }
+      .col-status { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Employee Admin</h1>
+      <div class="header-links">
+        <a href="/">&larr; Back to Board</a>
+      </div>
+    </div>
+
+    <!-- Add Employee -->
+    <div class="add-form">
+      <h2>Add Employee</h2>
+      <form id="addForm" class="form-row">
+        <div class="form-group">
+          <label for="addName">Name</label>
+          <input type="text" id="addName" placeholder="Jane Doe" required>
+        </div>
+        <div class="form-group">
+          <label for="addDept">Department</label>
+          <input type="text" id="addDept" list="deptSuggestions" placeholder="Engineering" required>
+          <datalist id="deptSuggestions"></datalist>
+        </div>
+        <div class="form-group" style="flex:0; min-width:auto;">
+          <label>&nbsp;</label>
+          <button type="submit" class="btn btn-primary">Add Employee</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Employee List -->
+    <div class="employee-list">
+      <h2>Employees <span class="emp-count" id="empCount"></span></h2>
+      <div style="overflow-x:auto;">
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Department</th>
+              <th class="col-status">Status</th>
+              <th style="width:1%"></th>
+            </tr>
+          </thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete confirmation dialog -->
+  <div class="confirm-overlay" id="confirmOverlay">
+    <div class="confirm-dialog">
+      <h3>Remove Employee</h3>
+      <p id="confirmMsg">Are you sure you want to remove this employee?</p>
+      <div class="confirm-actions">
+        <button class="btn btn-ghost" id="confirmCancel">Cancel</button>
+        <button class="btn btn-danger" id="confirmDelete">Remove</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const GREEN_STATUSES = ['IN', 'Away from Desk', 'In Meeting', 'Break'];
+    const RED_STATUSES = ['Lunch', 'OUT', 'PTO', 'Sick', 'Working from Home'];
+
+    function statusColor(status) {
+      return GREEN_STATUSES.includes(status) ? 'green' : 'red';
+    }
+
+    // --- State ---
+    let employees = [];
+    let editingId = null; // currently editing row
+    let deletingId = null; // pending delete
+
+    // --- DOM ---
+    const tableBody = document.getElementById('tableBody');
+    const empCount = document.getElementById('empCount');
+    const addForm = document.getElementById('addForm');
+    const addName = document.getElementById('addName');
+    const addDept = document.getElementById('addDept');
+    const deptSuggestions = document.getElementById('deptSuggestions');
+    const confirmOverlay = document.getElementById('confirmOverlay');
+    const confirmMsg = document.getElementById('confirmMsg');
+    const confirmCancel = document.getElementById('confirmCancel');
+    const confirmDelete = document.getElementById('confirmDelete');
+    const toast = document.getElementById('toast');
+
+    // --- Toast ---
+    let toastTimer = null;
+    function showToast(msg, isError = false) {
+      clearTimeout(toastTimer);
+      toast.textContent = msg;
+      toast.className = 'toast' + (isError ? ' error' : '');
+      requestAnimationFrame(() => toast.classList.add('show'));
+      toastTimer = setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+
+    // --- WebSocket ---
+    function connectWs() {
+      const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+      const ws = new WebSocket(`${protocol}//${location.host}`);
+
+      ws.addEventListener('open', () => {});
+
+      ws.addEventListener('close', () => {
+        setTimeout(connectWs, 2000);
+      });
+
+      ws.addEventListener('message', (event) => {
+        const data = JSON.parse(event.data);
+
+        if (data.type === 'init') {
+          employees = data.employees;
+          refreshDeptSuggestions();
+          render();
+        } else if (data.type === 'employee_updated') {
+          const idx = employees.findIndex(e => e.id === data.employee.id);
+          if (idx !== -1) employees[idx] = data.employee;
+          refreshDeptSuggestions();
+          render();
+        } else if (data.type === 'employee_added') {
+          employees.push(data.employee);
+          employees.sort((a, b) => a.name.localeCompare(b.name));
+          refreshDeptSuggestions();
+          render();
+        } else if (data.type === 'employee_removed') {
+          employees = employees.filter(e => e.id !== data.id);
+          render();
+        }
+      });
+    }
+
+    connectWs();
+
+    // --- API ---
+    async function apiPost(url, body) {
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      if (!res.ok) throw new Error(await res.text());
+      return res.json();
+    }
+
+    async function apiPut(url, body) {
+      const res = await fetch(url, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      if (!res.ok) throw new Error(await res.text());
+      return res.json();
+    }
+
+    async function apiDelete(url) {
+      const res = await fetch(url, { method: 'DELETE' });
+      if (!res.ok) throw new Error(await res.text());
+      return res.json();
+    }
+
+    // --- Department suggestions ---
+    function refreshDeptSuggestions() {
+      const depts = [...new Set(employees.map(e => e.department))].sort();
+      deptSuggestions.innerHTML = '';
+      depts.forEach(d => {
+        const opt = document.createElement('option');
+        opt.value = d;
+        deptSuggestions.appendChild(opt);
+      });
+    }
+
+    // --- Add employee ---
+    addForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const name = addName.value.trim();
+      const department = addDept.value.trim();
+      if (!name || !department) return;
+
+      try {
+        await apiPost('/employees', { name, department });
+        addName.value = '';
+        addDept.value = '';
+        addName.focus();
+        showToast(`Added ${name}`);
+      } catch (err) {
+        showToast('Failed to add employee', true);
+      }
+    });
+
+    // --- Delete flow ---
+    confirmCancel.addEventListener('click', () => {
+      deletingId = null;
+      confirmOverlay.classList.remove('show');
+    });
+
+    confirmOverlay.addEventListener('click', (e) => {
+      if (e.target === confirmOverlay) {
+        deletingId = null;
+        confirmOverlay.classList.remove('show');
+      }
+    });
+
+    confirmDelete.addEventListener('click', async () => {
+      if (!deletingId) return;
+      const emp = employees.find(e => e.id === deletingId);
+      try {
+        await apiDelete(`/employees/${deletingId}`);
+        showToast(`Removed ${emp ? emp.name : 'employee'}`);
+      } catch (err) {
+        showToast('Failed to remove employee', true);
+      }
+      deletingId = null;
+      confirmOverlay.classList.remove('show');
+    });
+
+    function promptDelete(emp) {
+      deletingId = emp.id;
+      confirmMsg.textContent = `Are you sure you want to remove ${emp.name} (${emp.department})?`;
+      confirmOverlay.classList.add('show');
+    }
+
+    // --- Inline edit ---
+    function startEditing(id) {
+      editingId = id;
+      render();
+    }
+
+    async function saveEdit(id) {
+      const row = document.querySelector(`tr[data-id="${id}"]`);
+      if (!row) return;
+
+      const nameInput = row.querySelector('.edit-name');
+      const deptInput = row.querySelector('.edit-dept');
+      if (!nameInput || !deptInput) return;
+
+      const name = nameInput.value.trim();
+      const department = deptInput.value.trim();
+
+      if (!name || !department) {
+        showToast('Name and department cannot be empty', true);
+        return;
+      }
+
+      try {
+        await apiPut(`/employees/${id}`, { name, department });
+        showToast('Saved changes');
+      } catch (err) {
+        showToast('Failed to save', true);
+      }
+
+      editingId = null;
+      render();
+    }
+
+    function cancelEdit() {
+      editingId = null;
+      render();
+    }
+
+    // --- Render ---
+    function render() {
+      empCount.textContent = `(${employees.length})`;
+
+      tableBody.innerHTML = '';
+      employees.forEach(emp => {
+        const tr = document.createElement('tr');
+        tr.dataset.id = emp.id;
+        const isEditing = editingId === emp.id;
+
+        // Name
+        const tdName = document.createElement('td');
+        if (isEditing) {
+          const input = document.createElement('input');
+          input.type = 'text';
+          input.className = 'edit-name';
+          input.value = emp.name;
+          input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') { e.preventDefault(); saveEdit(emp.id); }
+            if (e.key === 'Escape') cancelEdit();
+          });
+          tdName.appendChild(input);
+        } else {
+          tdName.textContent = emp.name;
+        }
+        tr.appendChild(tdName);
+
+        // Department
+        const tdDept = document.createElement('td');
+        if (isEditing) {
+          const input = document.createElement('input');
+          input.type = 'text';
+          input.className = 'edit-dept';
+          input.value = emp.department;
+          input.setAttribute('list', 'deptSuggestions');
+          input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') { e.preventDefault(); saveEdit(emp.id); }
+            if (e.key === 'Escape') cancelEdit();
+          });
+          tdDept.appendChild(input);
+        } else {
+          tdDept.textContent = emp.department;
+        }
+        tr.appendChild(tdDept);
+
+        // Status (read-only badge)
+        const tdStatus = document.createElement('td');
+        tdStatus.className = 'col-status';
+        const badge = document.createElement('span');
+        badge.className = `badge ${statusColor(emp.status)}`;
+        badge.textContent = emp.status;
+        tdStatus.appendChild(badge);
+        tr.appendChild(tdStatus);
+
+        // Actions
+        const tdActions = document.createElement('td');
+        const actionsDiv = document.createElement('div');
+        actionsDiv.className = 'actions-cell';
+
+        if (isEditing) {
+          const saveBtn = document.createElement('button');
+          saveBtn.className = 'btn btn-primary btn-sm';
+          saveBtn.textContent = 'Save';
+          saveBtn.addEventListener('click', () => saveEdit(emp.id));
+          actionsDiv.appendChild(saveBtn);
+
+          const cancelBtn = document.createElement('button');
+          cancelBtn.className = 'btn btn-ghost btn-sm';
+          cancelBtn.textContent = 'Cancel';
+          cancelBtn.addEventListener('click', cancelEdit);
+          actionsDiv.appendChild(cancelBtn);
+        } else {
+          const editBtn = document.createElement('button');
+          editBtn.className = 'btn btn-ghost btn-sm';
+          editBtn.textContent = 'Edit';
+          editBtn.addEventListener('click', () => startEditing(emp.id));
+          actionsDiv.appendChild(editBtn);
+
+          const deleteBtn = document.createElement('button');
+          deleteBtn.className = 'btn btn-danger btn-sm';
+          deleteBtn.textContent = 'Remove';
+          deleteBtn.addEventListener('click', () => promptDelete(emp));
+          actionsDiv.appendChild(deleteBtn);
+        }
+
+        tdActions.appendChild(actionsDiv);
+        tr.appendChild(tdActions);
+
+        tableBody.appendChild(tr);
+      });
+
+      // Auto-focus first input in editing row
+      if (editingId) {
+        const firstInput = tableBody.querySelector(`tr[data-id="${editingId}"] .edit-name`);
+        if (firstInput) { firstInput.focus(); firstInput.select(); }
+      }
+    }
+  </script>
+</body>
+</html>

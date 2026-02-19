@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>In/Out Board</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f0f2f5;
+      color: #1a1a1a;
+      line-height: 1.5;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 16px;
+    }
+
+    /* Summary bar */
+    .summary-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 16px;
+      padding: 12px 16px;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+      font-size: 0.875rem;
+      font-weight: 500;
+    }
+
+    .summary-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .summary-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    .summary-dot.green { background: #16a34a; }
+    .summary-dot.red { background: #dc2626; }
+
+    .summary-separator {
+      color: #ccc;
+      user-select: none;
+    }
+
+    /* Controls */
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 16px;
+      align-items: center;
+    }
+
+    .controls select,
+    .controls input {
+      padding: 8px 12px;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      font-size: 0.875rem;
+      background: #fff;
+    }
+
+    .controls input {
+      flex: 1;
+      min-width: 200px;
+      max-width: 320px;
+    }
+
+    .controls select { min-width: 160px; }
+
+    /* Table wrapper */
+    .table-wrap {
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.875rem;
+    }
+
+    thead th {
+      text-align: left;
+      padding: 12px 14px;
+      background: #f9fafb;
+      border-bottom: 2px solid #e5e7eb;
+      font-weight: 600;
+      white-space: nowrap;
+      user-select: none;
+    }
+
+    th.sortable {
+      cursor: pointer;
+    }
+
+    th.sortable:hover {
+      background: #f3f4f6;
+    }
+
+    th .sort-arrow {
+      margin-left: 4px;
+      font-size: 0.75rem;
+      color: #9ca3af;
+    }
+
+    th .sort-arrow.active {
+      color: #1a1a1a;
+    }
+
+    tbody td {
+      padding: 10px 14px;
+      border-bottom: 1px solid #f0f0f0;
+      vertical-align: middle;
+    }
+
+    tbody tr:hover {
+      background: #fafbfc;
+    }
+
+    /* Status badge */
+    .badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 9999px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .badge.green {
+      background: #dcfce7;
+      color: #15803d;
+    }
+
+    .badge.red {
+      background: #fee2e2;
+      color: #b91c1c;
+    }
+
+    /* Editable cells */
+    .editable {
+      cursor: pointer;
+      border-radius: 4px;
+      padding: 2px 4px;
+      min-height: 1.5em;
+      transition: background 0.15s;
+    }
+
+    .editable:hover {
+      background: #f3f4f6;
+    }
+
+    .editable.empty {
+      color: #9ca3af;
+      font-style: italic;
+    }
+
+    /* Inline edit inputs */
+    td input[type="text"],
+    td select {
+      width: 100%;
+      padding: 4px 8px;
+      border: 2px solid #3b82f6;
+      border-radius: 4px;
+      font-size: 0.875rem;
+      outline: none;
+    }
+
+    td select {
+      cursor: pointer;
+    }
+
+    /* Timestamp */
+    .timestamp {
+      color: #6b7280;
+      font-size: 0.8rem;
+      white-space: nowrap;
+    }
+
+    /* Mobile */
+    @media (max-width: 768px) {
+      .container { padding: 12px; }
+
+      h1 { font-size: 1.25rem; }
+
+      table { font-size: 0.8rem; }
+
+      thead th, tbody td { padding: 8px 8px; }
+
+      .controls { gap: 8px; }
+      .controls input { max-width: 100%; min-width: 0; }
+
+      /* Hide less critical columns on small screens */
+      .col-estimated-return,
+      .col-last-changed {
+        display: none;
+      }
+    }
+
+    /* Connection indicator */
+    .connection-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.75rem;
+      color: #6b7280;
+      float: right;
+    }
+
+    .connection-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #dc2626;
+    }
+
+    .connection-dot.connected {
+      background: #16a34a;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; margin-bottom:16px;">
+      <h1>In/Out Board</h1>
+      <div style="display:flex; align-items:center; gap:16px;">
+        <a href="/admin.html" style="color:#3b82f6; text-decoration:none; font-size:0.875rem; font-weight:500;">Manage Employees</a>
+        <span class="connection-status">
+          <span class="connection-dot" id="connDot"></span>
+          <span id="connLabel">Connecting...</span>
+        </span>
+      </div>
+    </div>
+
+    <div class="summary-bar" id="summaryBar"></div>
+
+    <div class="controls">
+      <select id="deptFilter">
+        <option value="">All Departments</option>
+      </select>
+      <input type="text" id="nameSearch" placeholder="Search by name...">
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th class="sortable" data-sort="name">Name <span class="sort-arrow" id="arrow-name">&#9650;</span></th>
+            <th class="sortable" data-sort="department">Department <span class="sort-arrow" id="arrow-department"></span></th>
+            <th>Status</th>
+            <th>Comment</th>
+            <th class="col-estimated-return">Est. Return</th>
+            <th class="col-last-changed">Last Changed</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    // --- Constants ---
+    const GREEN_STATUSES = ['IN', 'Away from Desk', 'In Meeting', 'Break'];
+    const RED_STATUSES = ['Lunch', 'OUT', 'PTO', 'Sick', 'Working from Home'];
+    const ALL_STATUSES = [...GREEN_STATUSES, ...RED_STATUSES];
+
+    function statusColor(status) {
+      return GREEN_STATUSES.includes(status) ? 'green' : 'red';
+    }
+
+    // --- State ---
+    let employees = [];
+    let sortCol = 'name';
+    let sortAsc = true;
+    let ws = null;
+
+    // --- DOM refs ---
+    const tableBody = document.getElementById('tableBody');
+    const summaryBar = document.getElementById('summaryBar');
+    const deptFilter = document.getElementById('deptFilter');
+    const nameSearch = document.getElementById('nameSearch');
+    const connDot = document.getElementById('connDot');
+    const connLabel = document.getElementById('connLabel');
+
+    // --- WebSocket ---
+    function connectWs() {
+      const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+      ws = new WebSocket(`${protocol}//${location.host}`);
+
+      ws.addEventListener('open', () => {
+        connDot.classList.add('connected');
+        connLabel.textContent = 'Connected';
+      });
+
+      ws.addEventListener('close', () => {
+        connDot.classList.remove('connected');
+        connLabel.textContent = 'Disconnected — reconnecting...';
+        setTimeout(connectWs, 2000);
+      });
+
+      ws.addEventListener('message', (event) => {
+        const data = JSON.parse(event.data);
+        if (data.type === 'init') {
+          employees = data.employees;
+          refreshDeptFilter();
+          render();
+        } else if (data.type === 'employee_updated') {
+          const idx = employees.findIndex(e => e.id === data.employee.id);
+          if (idx !== -1) {
+            employees[idx] = data.employee;
+          }
+          refreshDeptFilter();
+          render();
+        } else if (data.type === 'employee_added') {
+          employees.push(data.employee);
+          employees.sort((a, b) => a.name.localeCompare(b.name));
+          refreshDeptFilter();
+          render();
+        } else if (data.type === 'employee_removed') {
+          employees = employees.filter(e => e.id !== data.id);
+          refreshDeptFilter();
+          render();
+        }
+      });
+    }
+
+    connectWs();
+
+    // --- API helper ---
+    async function updateEmployee(id, fields) {
+      const res = await fetch(`/employees/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(fields),
+      });
+      if (!res.ok) {
+        console.error('Update failed', await res.text());
+      }
+    }
+
+    // --- Filtering & sorting ---
+    function getFilteredSorted() {
+      let list = [...employees];
+
+      const dept = deptFilter.value;
+      if (dept) {
+        list = list.filter(e => e.department === dept);
+      }
+
+      const search = nameSearch.value.trim().toLowerCase();
+      if (search) {
+        list = list.filter(e => e.name.toLowerCase().includes(search));
+      }
+
+      list.sort((a, b) => {
+        const aVal = (a[sortCol] || '').toLowerCase();
+        const bVal = (b[sortCol] || '').toLowerCase();
+        if (aVal < bVal) return sortAsc ? -1 : 1;
+        if (aVal > bVal) return sortAsc ? 1 : -1;
+        return 0;
+      });
+
+      return list;
+    }
+
+    // --- Department filter ---
+    function refreshDeptFilter() {
+      const current = deptFilter.value;
+      const depts = [...new Set(employees.map(e => e.department))].sort();
+      deptFilter.innerHTML = '<option value="">All Departments</option>';
+      depts.forEach(d => {
+        const opt = document.createElement('option');
+        opt.value = d;
+        opt.textContent = d;
+        if (d === current) opt.selected = true;
+        deptFilter.appendChild(opt);
+      });
+    }
+
+    deptFilter.addEventListener('change', render);
+    nameSearch.addEventListener('input', render);
+
+    // --- Sorting ---
+    document.querySelectorAll('th.sortable').forEach(th => {
+      th.addEventListener('click', () => {
+        const col = th.dataset.sort;
+        if (sortCol === col) {
+          sortAsc = !sortAsc;
+        } else {
+          sortCol = col;
+          sortAsc = true;
+        }
+        updateSortArrows();
+        render();
+      });
+    });
+
+    function updateSortArrows() {
+      document.querySelectorAll('.sort-arrow').forEach(el => {
+        el.classList.remove('active');
+        el.innerHTML = '';
+      });
+      const arrow = document.getElementById(`arrow-${sortCol}`);
+      if (arrow) {
+        arrow.classList.add('active');
+        arrow.innerHTML = sortAsc ? '&#9650;' : '&#9660;';
+      }
+    }
+
+    // --- Summary bar ---
+    function renderSummary() {
+      const counts = {};
+      ALL_STATUSES.forEach(s => counts[s] = 0);
+      employees.forEach(e => {
+        if (counts[e.status] !== undefined) counts[e.status]++;
+      });
+
+      const items = [];
+      ALL_STATUSES.forEach(s => {
+        if (counts[s] > 0) {
+          const color = statusColor(s);
+          items.push(`<span class="summary-item"><span class="summary-dot ${color}"></span>${counts[s]} ${s}</span>`);
+        }
+      });
+
+      summaryBar.innerHTML = items.join('<span class="summary-separator">&middot;</span>');
+    }
+
+    // --- Format timestamp ---
+    function formatTimestamp(ts) {
+      if (!ts) return '';
+      // ts comes as "YYYY-MM-DD HH:MM:SS" in UTC
+      const d = new Date(ts + 'Z');
+      return d.toLocaleString(undefined, {
+        month: 'short', day: 'numeric',
+        hour: 'numeric', minute: '2-digit',
+      });
+    }
+
+    // --- Render table ---
+    function render() {
+      renderSummary();
+      const list = getFilteredSorted();
+
+      tableBody.innerHTML = '';
+      list.forEach(emp => {
+        const tr = document.createElement('tr');
+        const color = statusColor(emp.status);
+
+        // Name
+        const tdName = document.createElement('td');
+        tdName.textContent = emp.name;
+        tr.appendChild(tdName);
+
+        // Department
+        const tdDept = document.createElement('td');
+        tdDept.textContent = emp.department;
+        tr.appendChild(tdDept);
+
+        // Status (editable dropdown)
+        const tdStatus = document.createElement('td');
+        const badge = document.createElement('span');
+        badge.className = `badge ${color} editable`;
+        badge.textContent = emp.status;
+        badge.addEventListener('click', () => openStatusEditor(tdStatus, emp));
+        tdStatus.appendChild(badge);
+        tr.appendChild(tdStatus);
+
+        // Comment (editable)
+        const tdComment = document.createElement('td');
+        const commentSpan = document.createElement('span');
+        commentSpan.className = 'editable' + (emp.comment ? '' : ' empty');
+        commentSpan.textContent = emp.comment || 'Add comment...';
+        commentSpan.addEventListener('click', () => openTextEditor(tdComment, emp, 'comment', 'Add comment...'));
+        tdComment.appendChild(commentSpan);
+        tr.appendChild(tdComment);
+
+        // Estimated Return (editable)
+        const tdReturn = document.createElement('td');
+        tdReturn.className = 'col-estimated-return';
+        const returnSpan = document.createElement('span');
+        returnSpan.className = 'editable' + (emp.estimated_return ? '' : ' empty');
+        returnSpan.textContent = emp.estimated_return || 'Set return...';
+        returnSpan.addEventListener('click', () => openTextEditor(tdReturn, emp, 'estimated_return', 'Set return...'));
+        tdReturn.appendChild(returnSpan);
+        tr.appendChild(tdReturn);
+
+        // Last Changed
+        const tdChanged = document.createElement('td');
+        tdChanged.className = 'col-last-changed';
+        const tsSpan = document.createElement('span');
+        tsSpan.className = 'timestamp';
+        tsSpan.textContent = formatTimestamp(emp.last_changed);
+        tdChanged.appendChild(tsSpan);
+        tr.appendChild(tdChanged);
+
+        tableBody.appendChild(tr);
+      });
+    }
+
+    // --- Inline editors ---
+    function openStatusEditor(td, emp) {
+      td.innerHTML = '';
+      const sel = document.createElement('select');
+
+      ALL_STATUSES.forEach(s => {
+        const opt = document.createElement('option');
+        opt.value = s;
+        opt.textContent = s;
+        if (s === emp.status) opt.selected = true;
+        sel.appendChild(opt);
+      });
+
+      sel.addEventListener('change', () => {
+        updateEmployee(emp.id, { status: sel.value });
+        // Optimistic local update
+        emp.status = sel.value;
+        render();
+      });
+
+      sel.addEventListener('blur', () => render());
+
+      td.appendChild(sel);
+      sel.focus();
+    }
+
+    function openTextEditor(td, emp, field, placeholder) {
+      td.innerHTML = '';
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.value = emp[field] || '';
+      input.placeholder = placeholder;
+
+      function save() {
+        const val = input.value.trim();
+        if (val !== (emp[field] || '')) {
+          updateEmployee(emp.id, { [field]: val });
+          emp[field] = val;
+        }
+        render();
+      }
+
+      input.addEventListener('blur', save);
+      input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          save();
+        }
+        if (e.key === 'Escape') {
+          render();
+        }
+      });
+
+      td.appendChild(input);
+      input.focus();
+      input.select();
+    }
+
+    // Initialize arrows
+    updateSortArrows();
+  </script>
+</body>
+</html>
