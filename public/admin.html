@@ -213,6 +213,7 @@
     }
 
     .badge.green { background: #dcfce7; color: #15803d; }
+    .badge.yellow { background: #fef9c3; color: #854d0e; }
     .badge.red { background: #fee2e2; color: #b91c1c; }
 
     /* Toast notification */
@@ -354,11 +355,14 @@
   <div class="toast" id="toast"></div>
 
   <script>
-    const GREEN_STATUSES = ['IN', 'Away from Desk', 'In Meeting', 'Break'];
-    const RED_STATUSES = ['Lunch', 'OUT', 'PTO', 'Sick', 'Working from Home'];
+    const GREEN_STATUSES = ['IN'];
+    const YELLOW_STATUSES = ['In Meeting', 'On Break', 'At Lunch', 'Away from Desk'];
+    const RED_STATUSES = ['OUT', 'Working Remotely', 'PTO', 'Sick'];
 
     function statusColor(status) {
-      return GREEN_STATUSES.includes(status) ? 'green' : 'red';
+      if (GREEN_STATUSES.includes(status)) return 'green';
+      if (YELLOW_STATUSES.includes(status)) return 'yellow';
+      return 'red';
     }
 
     // --- State ---

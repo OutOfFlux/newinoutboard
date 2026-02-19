@@ -7,10 +7,70 @@
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+    :root {
+      --bg-page: #f0f2f5;
+      --bg-card: #fff;
+      --bg-header: #f9fafb;
+      --bg-header-hover: #f3f4f6;
+      --bg-hover: #fafbfc;
+      --bg-editable-hover: #f3f4f6;
+      --bg-input: #fff;
+      --text-primary: #1a1a1a;
+      --text-secondary: #6b7280;
+      --text-muted: #9ca3af;
+      --border-main: #e5e7eb;
+      --border-light: #f0f0f0;
+      --border-input: #d1d5db;
+      --shadow: rgba(0,0,0,0.08);
+      --separator: #ccc;
+      --badge-green-bg: #dcfce7;
+      --badge-green-text: #15803d;
+      --badge-yellow-bg: #fef9c3;
+      --badge-yellow-text: #854d0e;
+      --row-yellow-bg: #fef9c3;
+      --row-yellow-hover: #fef08a;
+      --badge-red-bg: #fee2e2;
+      --badge-red-text: #b91c1c;
+      --row-red-bg: #fee2e2;
+      --row-red-hover: #fecaca;
+      --link-color: #3b82f6;
+      --focus-border: #3b82f6;
+    }
+
+    [data-theme="dark"] {
+      --bg-page: #111827;
+      --bg-card: #1f2937;
+      --bg-header: #283040;
+      --bg-header-hover: #374151;
+      --bg-hover: #283040;
+      --bg-editable-hover: #374151;
+      --bg-input: #374151;
+      --text-primary: #f3f4f6;
+      --text-secondary: #9ca3af;
+      --text-muted: #6b7280;
+      --border-main: #374151;
+      --border-light: #2d3748;
+      --border-input: #4b5563;
+      --shadow: rgba(0,0,0,0.3);
+      --separator: #4b5563;
+      --badge-green-bg: #064e3b;
+      --badge-green-text: #6ee7b7;
+      --badge-yellow-bg: #713f12;
+      --badge-yellow-text: #fde68a;
+      --row-yellow-bg: #2e1f05;
+      --row-yellow-hover: #3d2a0a;
+      --badge-red-bg: #7f1d1d;
+      --badge-red-text: #fca5a5;
+      --row-red-bg: #3b1111;
+      --row-red-hover: #4c1515;
+      --link-color: #60a5fa;
+      --focus-border: #60a5fa;
+    }
+
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: #f0f2f5;
-      color: #1a1a1a;
+      background: var(--bg-page);
+      color: var(--text-primary);
       line-height: 1.5;
     }
 
@@ -33,9 +93,9 @@
       gap: 8px;
       margin-bottom: 16px;
       padding: 12px 16px;
-      background: #fff;
+      background: var(--bg-card);
       border-radius: 8px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+      box-shadow: 0 1px 3px var(--shadow);
       font-size: 0.875rem;
       font-weight: 500;
     }
@@ -54,10 +114,11 @@
     }
 
     .summary-dot.green { background: #16a34a; }
+    .summary-dot.yellow { background: #ca8a04; }
     .summary-dot.red { background: #dc2626; }
 
     .summary-separator {
-      color: #ccc;
+      color: var(--separator);
       user-select: none;
     }
 
@@ -73,10 +134,11 @@
     .controls select,
     .controls input {
       padding: 8px 12px;
-      border: 1px solid #d1d5db;
+      border: 1px solid var(--border-input);
       border-radius: 6px;
       font-size: 0.875rem;
-      background: #fff;
+      background: var(--bg-input);
+      color: var(--text-primary);
     }
 
     .controls input {
@@ -89,9 +151,9 @@
 
     /* Table wrapper */
     .table-wrap {
-      background: #fff;
+      background: var(--bg-card);
       border-radius: 8px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+      box-shadow: 0 1px 3px var(--shadow);
       overflow-x: auto;
     }
 
@@ -104,8 +166,8 @@
     thead th {
       text-align: left;
       padding: 12px 14px;
-      background: #f9fafb;
-      border-bottom: 2px solid #e5e7eb;
+      background: var(--bg-header);
+      border-bottom: 2px solid var(--border-main);
       font-weight: 600;
       white-space: nowrap;
       user-select: none;
@@ -116,35 +178,43 @@
     }
 
     th.sortable:hover {
-      background: #f3f4f6;
+      background: var(--bg-header-hover);
     }
 
     th .sort-arrow {
       margin-left: 4px;
       font-size: 0.75rem;
-      color: #9ca3af;
+      color: var(--text-muted);
     }
 
     th .sort-arrow.active {
-      color: #1a1a1a;
+      color: var(--text-primary);
     }
 
     tbody td {
       padding: 10px 14px;
-      border-bottom: 1px solid #f0f0f0;
+      border-bottom: 1px solid var(--border-light);
       vertical-align: middle;
     }
 
     tbody tr:hover {
-      background: #fafbfc;
+      background: var(--bg-hover);
+    }
+
+    tbody tr.row-yellow {
+      background: var(--row-yellow-bg);
+    }
+
+    tbody tr.row-yellow:hover {
+      background: var(--row-yellow-hover);
     }
 
     tbody tr.row-red {
-      background: #fee2e2;
+      background: var(--row-red-bg);
     }
 
     tbody tr.row-red:hover {
-      background: #fecaca;
+      background: var(--row-red-hover);
     }
 
     /* Status badge */
@@ -158,13 +228,18 @@
     }
 
     .badge.green {
-      background: #dcfce7;
-      color: #15803d;
+      background: var(--badge-green-bg);
+      color: var(--badge-green-text);
+    }
+
+    .badge.yellow {
+      background: var(--badge-yellow-bg);
+      color: var(--badge-yellow-text);
     }
 
     .badge.red {
-      background: #fee2e2;
-      color: #b91c1c;
+      background: var(--badge-red-bg);
+      color: var(--badge-red-text);
     }
 
     /* Editable cells */
@@ -177,11 +252,11 @@
     }
 
     .editable:hover {
-      background: #f3f4f6;
+      background: var(--bg-editable-hover);
     }
 
     .editable.empty {
-      color: #9ca3af;
+      color: var(--text-muted);
       font-style: italic;
     }
 
@@ -190,19 +265,37 @@
     td select {
       width: 100%;
       padding: 4px 8px;
-      border: 2px solid #3b82f6;
+      border: 2px solid var(--focus-border);
       border-radius: 4px;
       font-size: 0.875rem;
       outline: none;
+      background: var(--bg-input);
+      color: var(--text-primary);
     }
 
     td select {
       cursor: pointer;
     }
 
+    td select optgroup {
+      font-weight: 700;
+      font-style: normal;
+      color: var(--text-secondary);
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    td select option {
+      font-weight: 500;
+      font-size: 0.875rem;
+      padding: 4px 8px;
+      color: var(--text-primary);
+    }
+
     /* Timestamp */
     .timestamp {
-      color: #6b7280;
+      color: var(--text-secondary);
       font-size: 0.8rem;
       white-space: nowrap;
     }
@@ -233,7 +326,7 @@
       align-items: center;
       gap: 6px;
       font-size: 0.75rem;
-      color: #6b7280;
+      color: var(--text-secondary);
       float: right;
     }
 
@@ -247,6 +340,46 @@
     .connection-dot.connected {
       background: #16a34a;
     }
+
+    /* Dark mode toggle */
+    .dark-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--text-secondary);
+      user-select: none;
+    }
+
+    .dark-toggle-track {
+      width: 36px;
+      height: 20px;
+      border-radius: 10px;
+      background: var(--border-input);
+      position: relative;
+      transition: background 0.2s;
+    }
+
+    .dark-toggle-track .thumb {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #fff;
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      transition: transform 0.2s;
+    }
+
+    [data-theme="dark"] .dark-toggle-track {
+      background: #3b82f6;
+    }
+
+    [data-theme="dark"] .dark-toggle-track .thumb {
+      transform: translateX(16px);
+    }
   </style>
 </head>
 <body>
@@ -254,7 +387,11 @@
     <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; margin-bottom:16px;">
       <h1>In/Out Board</h1>
       <div style="display:flex; align-items:center; gap:16px;">
-        <a href="/admin.html" style="color:#3b82f6; text-decoration:none; font-size:0.875rem; font-weight:500;">Manage Employees</a>
+        <label class="dark-toggle" id="darkToggle">
+          <span class="dark-toggle-track"><span class="thumb"></span></span>
+          <span>Dark</span>
+        </label>
+        <a href="/admin.html" style="color:var(--link-color); text-decoration:none; font-size:0.875rem; font-weight:500;">Manage Employees</a>
         <span class="connection-status">
           <span class="connection-dot" id="connDot"></span>
           <span id="connLabel">Connecting...</span>
@@ -277,7 +414,7 @@
           <tr>
             <th class="sortable" data-sort="name">Name <span class="sort-arrow" id="arrow-name">&#9650;</span></th>
             <th class="sortable" data-sort="department">Department <span class="sort-arrow" id="arrow-department"></span></th>
-            <th>Status</th>
+            <th class="sortable" data-sort="status">Status <span class="sort-arrow" id="arrow-status"></span></th>
             <th>Comment</th>
             <th class="col-estimated-return">Est. Return</th>
             <th class="col-last-changed">Last Changed</th>
@@ -290,12 +427,15 @@
 
   <script>
     // --- Constants ---
-    const GREEN_STATUSES = ['IN', 'Away from Desk', 'In Meeting', 'Break'];
-    const RED_STATUSES = ['Lunch', 'OUT', 'PTO', 'Sick', 'Working from Home'];
-    const ALL_STATUSES = [...GREEN_STATUSES, ...RED_STATUSES];
+    const GREEN_STATUSES = ['IN'];
+    const YELLOW_STATUSES = ['In Meeting', 'On Break', 'At Lunch', 'Away from Desk'];
+    const RED_STATUSES = ['OUT', 'Working Remotely', 'PTO', 'Sick'];
+    const ALL_STATUSES = [...GREEN_STATUSES, ...YELLOW_STATUSES, ...RED_STATUSES];
 
     function statusColor(status) {
-      return GREEN_STATUSES.includes(status) ? 'green' : 'red';
+      if (GREEN_STATUSES.includes(status)) return 'green';
+      if (YELLOW_STATUSES.includes(status)) return 'yellow';
+      return 'red';
     }
 
     // --- State ---
@@ -311,6 +451,26 @@
     const nameSearch = document.getElementById('nameSearch');
     const connDot = document.getElementById('connDot');
     const connLabel = document.getElementById('connLabel');
+    const darkToggle = document.getElementById('darkToggle');
+
+    // --- Dark mode ---
+    function applyTheme(dark) {
+      document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+      localStorage.setItem('theme', dark ? 'dark' : 'light');
+    }
+
+    darkToggle.addEventListener('click', () => {
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      applyTheme(!isDark);
+    });
+
+    // Initialize from saved preference or system preference
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme) {
+      applyTheme(savedTheme === 'dark');
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      applyTheme(true);
+    }
 
     // --- WebSocket ---
     function connectWs() {
@@ -383,11 +543,15 @@
       }
 
       list.sort((a, b) => {
-        const aVal = (a[sortCol] || '').toLowerCase();
-        const bVal = (b[sortCol] || '').toLowerCase();
-        if (aVal < bVal) return sortAsc ? -1 : 1;
-        if (aVal > bVal) return sortAsc ? 1 : -1;
-        return 0;
+        let cmp;
+        if (sortCol === 'status') {
+          cmp = ALL_STATUSES.indexOf(a.status) - ALL_STATUSES.indexOf(b.status);
+        } else {
+          const aVal = (a[sortCol] || '').toLowerCase();
+          const bVal = (b[sortCol] || '').toLowerCase();
+          cmp = aVal < bVal ? -1 : aVal > bVal ? 1 : 0;
+        }
+        return sortAsc ? cmp : -cmp;
       });
 
       return list;
@@ -490,6 +654,7 @@
       list.forEach(emp => {
         const tr = document.createElement('tr');
         const color = statusColor(emp.status);
+        if (color === 'yellow') tr.classList.add('row-yellow');
         if (color === 'red') tr.classList.add('row-red');
 
         // Name
@@ -545,16 +710,27 @@
     }
 
     // --- Inline editors ---
+    const STATUS_GROUPS = [
+      { label: 'Available', statuses: GREEN_STATUSES },
+      { label: 'Unavailable', statuses: YELLOW_STATUSES },
+      { label: 'Out of Office', statuses: RED_STATUSES },
+    ];
+
     function openStatusEditor(td, emp) {
       td.innerHTML = '';
       const sel = document.createElement('select');
 
-      ALL_STATUSES.forEach(s => {
-        const opt = document.createElement('option');
-        opt.value = s;
-        opt.textContent = s;
-        if (s === emp.status) opt.selected = true;
-        sel.appendChild(opt);
+      STATUS_GROUPS.forEach(group => {
+        const optgroup = document.createElement('optgroup');
+        optgroup.label = group.label;
+        group.statuses.forEach(s => {
+          const opt = document.createElement('option');
+          opt.value = s;
+          opt.textContent = s;
+          if (s === emp.status) opt.selected = true;
+          optgroup.appendChild(opt);
+        });
+        sel.appendChild(optgroup);
       });
 
       sel.addEventListener('change', () => {
