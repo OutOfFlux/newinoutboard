@@ -4,6 +4,7 @@ const { WebSocketServer } = require('ws');
 const path = require('path');
 const { getDb, initDb } = require('./db');
 
+const { version } = require('./package.json');
 const PORT = process.env.PORT || 3000;
 
 // Initialize database
@@ -12,6 +13,11 @@ initDb();
 const app = express();
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
+
+// GET /version
+app.get('/version', (_req, res) => {
+  res.json({ version });
+});
 
 // GET /employees — return all employees
 app.get('/employees', (req, res) => {

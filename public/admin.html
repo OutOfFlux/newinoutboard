@@ -7,10 +7,58 @@
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+    :root {
+      --bg-page: #f0f2f5;
+      --bg-card: #fff;
+      --bg-header: #f9fafb;
+      --bg-hover: #fafbfc;
+      --bg-editable-hover: #f3f4f6;
+      --bg-input: #fff;
+      --text-primary: #1a1a1a;
+      --text-secondary: #6b7280;
+      --border-main: #e5e7eb;
+      --border-light: #f0f0f0;
+      --border-input: #d1d5db;
+      --shadow: rgba(0,0,0,0.08);
+      --badge-green-bg: #dcfce7;
+      --badge-green-text: #15803d;
+      --badge-yellow-bg: #fef9c3;
+      --badge-yellow-text: #854d0e;
+      --badge-red-bg: #fee2e2;
+      --badge-red-text: #b91c1c;
+      --row-red-hover: #fecaca;
+      --link-color: #3b82f6;
+      --focus-border: #3b82f6;
+    }
+
+    [data-theme="dark"] {
+      --bg-page: #111827;
+      --bg-card: #1f2937;
+      --bg-header: #283040;
+      --bg-hover: #283040;
+      --bg-editable-hover: #374151;
+      --bg-input: #374151;
+      --text-primary: #f3f4f6;
+      --text-secondary: #9ca3af;
+      --border-main: #374151;
+      --border-light: #2d3748;
+      --border-input: #4b5563;
+      --shadow: rgba(0,0,0,0.3);
+      --badge-green-bg: #064e3b;
+      --badge-green-text: #6ee7b7;
+      --badge-yellow-bg: #713f12;
+      --badge-yellow-text: #fde68a;
+      --badge-red-bg: #7f1d1d;
+      --badge-red-text: #fca5a5;
+      --row-red-hover: #4c1515;
+      --link-color: #60a5fa;
+      --focus-border: #60a5fa;
+    }
+
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: #f0f2f5;
-      color: #1a1a1a;
+      background: var(--bg-page);
+      color: var(--text-primary);
       line-height: 1.5;
     }
 
@@ -38,7 +86,7 @@
     }
 
     .header-links a {
-      color: #3b82f6;
+      color: var(--link-color);
       text-decoration: none;
       font-size: 0.875rem;
       font-weight: 500;
@@ -46,11 +94,51 @@
 
     .header-links a:hover { text-decoration: underline; }
 
+    /* Dark mode toggle */
+    .dark-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--text-secondary);
+      user-select: none;
+    }
+
+    .dark-toggle-track {
+      width: 36px;
+      height: 20px;
+      border-radius: 10px;
+      background: var(--border-input);
+      position: relative;
+      transition: background 0.2s;
+    }
+
+    .dark-toggle-track .thumb {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #fff;
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      transition: transform 0.2s;
+    }
+
+    [data-theme="dark"] .dark-toggle-track {
+      background: #3b82f6;
+    }
+
+    [data-theme="dark"] .dark-toggle-track .thumb {
+      transform: translateX(16px);
+    }
+
     /* Add employee form */
     .add-form {
-      background: #fff;
+      background: var(--bg-card);
       border-radius: 8px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+      box-shadow: 0 1px 3px var(--shadow);
       padding: 20px;
       margin-bottom: 24px;
     }
@@ -79,7 +167,7 @@
     .form-group label {
       font-size: 0.75rem;
       font-weight: 600;
-      color: #6b7280;
+      color: var(--text-secondary);
       text-transform: uppercase;
       letter-spacing: 0.05em;
     }
@@ -87,16 +175,17 @@
     .form-group input,
     .form-group select {
       padding: 8px 12px;
-      border: 1px solid #d1d5db;
+      border: 1px solid var(--border-input);
       border-radius: 6px;
       font-size: 0.875rem;
-      background: #fff;
+      background: var(--bg-input);
+      color: var(--text-primary);
     }
 
     .form-group input:focus,
     .form-group select:focus {
       outline: none;
-      border-color: #3b82f6;
+      border-color: var(--focus-border);
       box-shadow: 0 0 0 2px rgba(59,130,246,0.15);
     }
 
@@ -124,18 +213,18 @@
     .btn-primary:hover:not(:disabled) { background: #2563eb; }
 
     .btn-danger {
-      background: #fee2e2;
-      color: #b91c1c;
+      background: var(--badge-red-bg);
+      color: var(--badge-red-text);
     }
 
-    .btn-danger:hover:not(:disabled) { background: #fecaca; }
+    .btn-danger:hover:not(:disabled) { background: var(--row-red-hover); }
 
     .btn-ghost {
-      background: #f3f4f6;
-      color: #374151;
+      background: var(--bg-editable-hover);
+      color: var(--text-primary);
     }
 
-    .btn-ghost:hover:not(:disabled) { background: #e5e7eb; }
+    .btn-ghost:hover:not(:disabled) { background: var(--border-main); }
 
     .btn-sm {
       padding: 5px 12px;
@@ -144,9 +233,9 @@
 
     /* Employee list */
     .employee-list {
-      background: #fff;
+      background: var(--bg-card);
       border-radius: 8px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+      box-shadow: 0 1px 3px var(--shadow);
     }
 
     .employee-list h2 {
@@ -157,7 +246,7 @@
 
     .emp-count {
       font-weight: 400;
-      color: #6b7280;
+      color: var(--text-secondary);
     }
 
     table {
@@ -169,20 +258,20 @@
     thead th {
       text-align: left;
       padding: 10px 14px;
-      background: #f9fafb;
-      border-bottom: 2px solid #e5e7eb;
+      background: var(--bg-header);
+      border-bottom: 2px solid var(--border-main);
       font-weight: 600;
       white-space: nowrap;
     }
 
     tbody td {
       padding: 10px 14px;
-      border-bottom: 1px solid #f0f0f0;
+      border-bottom: 1px solid var(--border-light);
       vertical-align: middle;
     }
 
     tbody tr:hover {
-      background: #fafbfc;
+      background: var(--bg-hover);
     }
 
     .actions-cell {
@@ -196,10 +285,12 @@
     td select {
       width: 100%;
       padding: 4px 8px;
-      border: 2px solid #3b82f6;
+      border: 2px solid var(--focus-border);
       border-radius: 4px;
       font-size: 0.875rem;
       outline: none;
+      background: var(--bg-input);
+      color: var(--text-primary);
     }
 
     /* Badge */
@@ -212,9 +303,9 @@
       white-space: nowrap;
     }
 
-    .badge.green { background: #dcfce7; color: #15803d; }
-    .badge.yellow { background: #fef9c3; color: #854d0e; }
-    .badge.red { background: #fee2e2; color: #b91c1c; }
+    .badge.green { background: var(--badge-green-bg); color: var(--badge-green-text); }
+    .badge.yellow { background: var(--badge-yellow-bg); color: var(--badge-yellow-text); }
+    .badge.red { background: var(--badge-red-bg); color: var(--badge-red-text); }
 
     /* Toast notification */
     .toast {
@@ -257,7 +348,7 @@
     .confirm-overlay.show { display: flex; }
 
     .confirm-dialog {
-      background: #fff;
+      background: var(--bg-card);
       border-radius: 12px;
       box-shadow: 0 8px 30px rgba(0,0,0,0.15);
       padding: 24px;
@@ -272,7 +363,7 @@
 
     .confirm-dialog p {
       font-size: 0.875rem;
-      color: #6b7280;
+      color: var(--text-secondary);
       margin-bottom: 20px;
     }
 
@@ -280,6 +371,14 @@
       display: flex;
       gap: 8px;
       justify-content: flex-end;
+    }
+
+    /* Footer */
+    .page-footer {
+      text-align: center;
+      padding: 24px 0 12px;
+      font-size: 0.75rem;
+      color: var(--text-muted);
     }
 
     /* Mobile */
@@ -296,6 +395,10 @@
     <div class="header">
       <h1>Employee Admin</h1>
       <div class="header-links">
+        <label class="dark-toggle" id="darkToggle">
+          <span class="dark-toggle-track"><span class="thumb"></span></span>
+          <span>Dark</span>
+        </label>
         <a href="/">&larr; Back to Board</a>
       </div>
     </div>
@@ -354,7 +457,33 @@
   <!-- Toast -->
   <div class="toast" id="toast"></div>
 
+  <footer class="page-footer">In/Out Board v<span id="footerVersion"></span></footer>
+
   <script>
+    // --- Footer version ---
+    fetch('/version').then(r => r.json()).then(({ version }) => {
+      document.getElementById('footerVersion').textContent = version;
+    });
+
+    // --- Dark mode (shared with main board via localStorage) ---
+    function applyTheme(dark) {
+      document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+      localStorage.setItem('theme', dark ? 'dark' : 'light');
+    }
+
+    const darkToggle = document.getElementById('darkToggle');
+    darkToggle.addEventListener('click', () => {
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      applyTheme(!isDark);
+    });
+
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme) {
+      applyTheme(savedTheme === 'dark');
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      applyTheme(true);
+    }
+
     const GREEN_STATUSES = ['IN'];
     const YELLOW_STATUSES = ['In Meeting', 'On Break', 'At Lunch', 'Away from Desk'];
     const RED_STATUSES = ['OUT', 'Working Remotely', 'PTO', 'Sick'];

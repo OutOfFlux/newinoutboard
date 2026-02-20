@@ -379,6 +379,13 @@
     [data-theme="dark"] .dark-toggle-track .thumb {
       transform: translateX(16px);
     }
+    /* Footer */
+    .page-footer {
+      text-align: center;
+      padding: 24px 0 12px;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
   </style>
 </head>
 <body>
@@ -426,6 +433,8 @@
       </table>
     </div>
   </div>
+
+  <footer class="page-footer">In/Out Board v<span id="footerVersion"></span></footer>
 
   <script>
     // --- Constants ---
@@ -789,6 +798,11 @@
 
     // Refresh relative timestamps every 60 seconds
     setInterval(render, 60000);
+
+    // --- Footer version ---
+    fetch('/version').then(r => r.json()).then(({ version }) => {
+      document.getElementById('footerVersion').textContent = version;
+    });
   </script>
 </body>
 </html>
