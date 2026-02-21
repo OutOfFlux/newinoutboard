@@ -23,6 +23,18 @@ function initDb() {
       last_changed TEXT NOT NULL DEFAULT (datetime('now'))
     )
   `);
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS vehicles (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL
+    )
+  `);
+  // Migrate: add vehicle_id column to employees if it doesn't exist
+  try {
+    db.exec('ALTER TABLE employees ADD COLUMN vehicle_id INTEGER REFERENCES vehicles(id)');
+  } catch (e) {
+    // Column already exists, ignore
+  }
   db.close();
 }
 

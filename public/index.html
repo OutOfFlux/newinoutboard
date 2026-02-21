@@ -313,6 +313,7 @@
       .controls input { max-width: 100%; min-width: 0; }
 
       /* Hide less critical columns on small screens */
+      .col-vehicle,
       .col-estimated-return,
       .col-last-changed {
         display: none;
@@ -425,6 +426,7 @@
             <th class="sortable" data-sort="department">Department <span class="sort-arrow" id="arrow-department"></span></th>
             <th class="sortable" data-sort="status">Status <span class="sort-arrow" id="arrow-status"></span></th>
             <th>Comment</th>
+            <th class="col-vehicle">Vehicle</th>
             <th class="col-estimated-return">Est. Return</th>
             <th class="col-last-changed">Last Changed</th>
           </tr>
@@ -451,6 +453,7 @@
 
     // --- State ---
     let employees = [];
+    let vehicles = [];
     let sortCol = 'name';
     let sortAsc = true;
     let ws = null;
@@ -503,6 +506,7 @@
         const data = JSON.parse(event.data);
         if (data.type === 'init') {
           employees = data.employees;
+          vehicles = data.vehicles || [];
           refreshDeptFilter();
           render();
         } else if (data.type === 'employee_updated') {
@@ -520,6 +524,17 @@
         } else if (data.type === 'employee_removed') {
           employees = employees.filter(e => e.id !== data.id);
           refreshDeptFilter();
+          render();
+        } else if (data.type === 'vehicle_added') {
+          vehicles.push(data.vehicle);
+          vehicles.sort((a, b) => a.name.localeCompare(b.name));
+          render();
+        } else if (data.type === 'vehicle_updated') {
+          const idx = vehicles.findIndex(v => v.id === data.vehicle.id);
+          if (idx !== -1) vehicles[idx] = data.vehicle;
+          render();
+        } else if (data.type === 'vehicle_removed') {
+          vehicles = vehicles.filter(v => v.id !== data.id);
           render();
         }
       });
@@ -696,6 +711,16 @@
         tdComment.appendChild(commentSpan);
         tr.appendChild(tdComment);
 
+        // Vehicle (editable dropdown)
+        const tdVehicle = document.createElement('td');
+        tdVehicle.className = 'col-vehicle';
+        const vehicleSpan = document.createElement('span');
+        vehicleSpan.className = 'editable' + (emp.vehicle_name ? '' : ' empty');
+        vehicleSpan.textContent = emp.vehicle_name || 'None';
+        vehicleSpan.addEventListener('click', () => openVehicleEditor(tdVehicle, emp));
+        tdVehicle.appendChild(vehicleSpan);
+        tr.appendChild(tdVehicle);
+
         // Estimated Return (editable)
         const tdReturn = document.createElement('td');
         tdReturn.className = 'col-estimated-return';
@@ -751,7 +776,53 @@
         if (sel.value === 'IN') {
           emp.comment = '';
           emp.estimated_return = '';
+          emp.vehicle_id = null;
+          emp.vehicle_name = '';
         }
+        render();
+      });
+
+      sel.addEventListener('blur', () => render());
+
+      td.appendChild(sel);
+      sel.focus();
+    }
+
+    function openVehicleEditor(td, emp) {
+      td.innerHTML = '';
+      const sel = document.createElement('select');
+
+      const noneOpt = document.createElement('option');
+      noneOpt.value = '';
+      noneOpt.textContent = '(None)';
+      if (!emp.vehicle_id) noneOpt.selected = true;
+      sel.appendChild(noneOpt);
+
+      vehicles.forEach(v => {
+        const opt = document.createElement('option');
+        opt.value = v.id;
+        const takenBy = employees.find(e => e.vehicle_id === v.id && e.id !== emp.id);
+        if (takenBy) {
+          opt.textContent = `${v.name} — taken by ${takenBy.name}`;
+          opt.disabled = true;
+        } else {
+          opt.textContent = v.name;
+        }
+        if (v.id === emp.vehicle_id) opt.selected = true;
+        sel.appendChild(opt);
+      });
+
+      sel.addEventListener('change', () => {
+        const vehicleId = sel.value ? Number(sel.value) : null;
+        const fields = { vehicle_id: vehicleId };
+        // Auto-set status to OUT when picking a vehicle while IN
+        if (vehicleId && emp.status === 'IN') {
+          fields.status = 'OUT';
+        }
+        updateEmployee(emp.id, fields);
+        emp.vehicle_id = vehicleId;
+        emp.vehicle_name = vehicleId ? (vehicles.find(v => v.id === vehicleId) || {}).name || '' : '';
+        if (fields.status) emp.status = fields.status;
         render();
       });
 

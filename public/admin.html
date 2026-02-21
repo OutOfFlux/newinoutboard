@@ -440,6 +440,38 @@
         </table>
       </div>
     </div>
+
+    <!-- Add Vehicle -->
+    <div class="add-form" style="margin-top:24px;">
+      <h2>Add Vehicle</h2>
+      <form id="addVehicleForm" class="form-row">
+        <div class="form-group">
+          <label for="addVehicleName">Vehicle Name</label>
+          <input type="text" id="addVehicleName" placeholder="2022 Ford F-150" required>
+        </div>
+        <div class="form-group" style="flex:0; min-width:auto;">
+          <label>&nbsp;</label>
+          <button type="submit" class="btn btn-primary">Add Vehicle</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Vehicle List -->
+    <div class="employee-list">
+      <h2>Vehicles <span class="emp-count" id="vehicleCount"></span></h2>
+      <div style="overflow-x:auto;">
+        <table>
+          <thead>
+            <tr>
+              <th>Vehicle Name</th>
+              <th>Status</th>
+              <th style="width:1%"></th>
+            </tr>
+          </thead>
+          <tbody id="vehicleTableBody"></tbody>
+        </table>
+      </div>
+    </div>
   </div>
 
   <!-- Delete confirmation dialog -->
@@ -496,8 +528,11 @@
 
     // --- State ---
     let employees = [];
-    let editingId = null; // currently editing row
-    let deletingId = null; // pending delete
+    let vehicles = [];
+    let editingId = null; // currently editing employee row
+    let editingVehicleId = null; // currently editing vehicle row
+    let deletingId = null; // pending delete (employee)
+    let deletingVehicleId = null; // pending delete (vehicle)
 
     // --- DOM ---
     const tableBody = document.getElementById('tableBody');
@@ -506,6 +541,10 @@
     const addName = document.getElementById('addName');
     const addDept = document.getElementById('addDept');
     const deptSuggestions = document.getElementById('deptSuggestions');
+    const vehicleTableBody = document.getElementById('vehicleTableBody');
+    const vehicleCount = document.getElementById('vehicleCount');
+    const addVehicleForm = document.getElementById('addVehicleForm');
+    const addVehicleName = document.getElementById('addVehicleName');
     const confirmOverlay = document.getElementById('confirmOverlay');
     const confirmMsg = document.getElementById('confirmMsg');
     const confirmCancel = document.getElementById('confirmCancel');
@@ -538,13 +577,16 @@
 
         if (data.type === 'init') {
           employees = data.employees;
+          vehicles = data.vehicles || [];
           refreshDeptSuggestions();
           render();
+          renderVehicles();
         } else if (data.type === 'employee_updated') {
           const idx = employees.findIndex(e => e.id === data.employee.id);
           if (idx !== -1) employees[idx] = data.employee;
           refreshDeptSuggestions();
           render();
+          renderVehicles(); // vehicle status column references employees
         } else if (data.type === 'employee_added') {
           employees.push(data.employee);
           employees.sort((a, b) => a.name.localeCompare(b.name));
@@ -553,6 +595,18 @@
         } else if (data.type === 'employee_removed') {
           employees = employees.filter(e => e.id !== data.id);
           render();
+          renderVehicles();
+        } else if (data.type === 'vehicle_added') {
+          vehicles.push(data.vehicle);
+          vehicles.sort((a, b) => a.name.localeCompare(b.name));
+          renderVehicles();
+        } else if (data.type === 'vehicle_updated') {
+          const idx = vehicles.findIndex(v => v.id === data.vehicle.id);
+          if (idx !== -1) vehicles[idx] = data.vehicle;
+          renderVehicles();
+        } else if (data.type === 'vehicle_removed') {
+          vehicles = vehicles.filter(v => v.id !== data.id);
+          renderVehicles();
         }
       });
     }
@@ -615,20 +669,50 @@
       }
     });
 
+    // --- Add vehicle ---
+    addVehicleForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const name = addVehicleName.value.trim();
+      if (!name) return;
+
+      try {
+        await apiPost('/vehicles', { name });
+        addVehicleName.value = '';
+        addVehicleName.focus();
+        showToast(`Added ${name}`);
+      } catch (err) {
+        showToast('Failed to add vehicle', true);
+      }
+    });
+
     // --- Delete flow ---
     confirmCancel.addEventListener('click', () => {
       deletingId = null;
+      deletingVehicleId = null;
       confirmOverlay.classList.remove('show');
     });
 
     confirmOverlay.addEventListener('click', (e) => {
       if (e.target === confirmOverlay) {
         deletingId = null;
+        deletingVehicleId = null;
         confirmOverlay.classList.remove('show');
       }
     });
 
     confirmDelete.addEventListener('click', async () => {
+      if (deletingVehicleId) {
+        const v = vehicles.find(v => v.id === deletingVehicleId);
+        try {
+          await apiDelete(`/vehicles/${deletingVehicleId}`);
+          showToast(`Removed ${v ? v.name : 'vehicle'}`);
+        } catch (err) {
+          showToast('Failed to remove vehicle', true);
+        }
+        deletingVehicleId = null;
+        confirmOverlay.classList.remove('show');
+        return;
+      }
       if (!deletingId) return;
       const emp = employees.find(e => e.id === deletingId);
       try {
@@ -643,7 +727,18 @@
 
     function promptDelete(emp) {
       deletingId = emp.id;
+      deletingVehicleId = null;
       confirmMsg.textContent = `Are you sure you want to remove ${emp.name} (${emp.department})?`;
+      confirmOverlay.classList.add('show');
+    }
+
+    function promptDeleteVehicle(vehicle) {
+      const usedBy = employees.find(e => e.vehicle_id === vehicle.id);
+      deletingVehicleId = vehicle.id;
+      deletingId = null;
+      confirmMsg.textContent = usedBy
+        ? `Remove "${vehicle.name}"? It is currently checked out by ${usedBy.name}.`
+        : `Are you sure you want to remove "${vehicle.name}"?`;
       confirmOverlay.classList.add('show');
     }
 
@@ -683,6 +778,121 @@
     function cancelEdit() {
       editingId = null;
       render();
+    }
+
+    function startEditingVehicle(id) {
+      editingVehicleId = id;
+      renderVehicles();
+    }
+
+    async function saveVehicleEdit(id) {
+      const row = document.querySelector(`tr[data-vehicle-id="${id}"]`);
+      if (!row) return;
+      const nameInput = row.querySelector('.edit-vehicle-name');
+      if (!nameInput) return;
+      const name = nameInput.value.trim();
+      if (!name) {
+        showToast('Vehicle name cannot be empty', true);
+        return;
+      }
+      try {
+        await apiPut(`/vehicles/${id}`, { name });
+        showToast('Saved changes');
+      } catch (err) {
+        showToast('Failed to save', true);
+      }
+      editingVehicleId = null;
+      renderVehicles();
+    }
+
+    function cancelVehicleEdit() {
+      editingVehicleId = null;
+      renderVehicles();
+    }
+
+    // --- Render vehicles ---
+    function renderVehicles() {
+      vehicleCount.textContent = `(${vehicles.length})`;
+      vehicleTableBody.innerHTML = '';
+
+      vehicles.forEach(vehicle => {
+        const tr = document.createElement('tr');
+        tr.dataset.vehicleId = vehicle.id;
+        const isEditing = editingVehicleId === vehicle.id;
+
+        // Name
+        const tdName = document.createElement('td');
+        if (isEditing) {
+          const input = document.createElement('input');
+          input.type = 'text';
+          input.className = 'edit-vehicle-name';
+          input.value = vehicle.name;
+          input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') { e.preventDefault(); saveVehicleEdit(vehicle.id); }
+            if (e.key === 'Escape') cancelVehicleEdit();
+          });
+          tdName.appendChild(input);
+        } else {
+          tdName.textContent = vehicle.name;
+        }
+        tr.appendChild(tdName);
+
+        // Status: Available or In Use
+        const tdStatus = document.createElement('td');
+        const usedBy = employees.find(e => e.vehicle_id === vehicle.id);
+        const badge = document.createElement('span');
+        if (usedBy) {
+          badge.className = 'badge yellow';
+          badge.textContent = `Out — ${usedBy.name}`;
+        } else {
+          badge.className = 'badge green';
+          badge.textContent = 'Available';
+        }
+        tdStatus.appendChild(badge);
+        tr.appendChild(tdStatus);
+
+        // Actions
+        const tdActions = document.createElement('td');
+        const actionsDiv = document.createElement('div');
+        actionsDiv.className = 'actions-cell';
+
+        if (isEditing) {
+          const saveBtn = document.createElement('button');
+          saveBtn.className = 'btn btn-primary btn-sm';
+          saveBtn.textContent = 'Save';
+          saveBtn.addEventListener('click', () => saveVehicleEdit(vehicle.id));
+          actionsDiv.appendChild(saveBtn);
+
+          const cancelBtn = document.createElement('button');
+          cancelBtn.className = 'btn btn-ghost btn-sm';
+          cancelBtn.textContent = 'Cancel';
+          cancelBtn.addEventListener('click', cancelVehicleEdit);
+          actionsDiv.appendChild(cancelBtn);
+        } else {
+          const editBtn = document.createElement('button');
+          editBtn.className = 'btn btn-ghost btn-sm';
+          editBtn.textContent = 'Edit';
+          editBtn.addEventListener('click', () => startEditingVehicle(vehicle.id));
+          actionsDiv.appendChild(editBtn);
+
+          const deleteBtn = document.createElement('button');
+          deleteBtn.className = 'btn btn-danger btn-sm';
+          deleteBtn.textContent = 'Remove';
+          deleteBtn.addEventListener('click', () => promptDeleteVehicle(vehicle));
+          actionsDiv.appendChild(deleteBtn);
+        }
+
+        tdActions.appendChild(actionsDiv);
+        tr.appendChild(tdActions);
+
+        vehicleTableBody.appendChild(tr);
+      });
+
+      // Auto-focus first input in editing row
+      if (editingVehicleId) {
+        const firstInput = vehicleTableBody.querySelector(`tr[data-vehicle-id="${editingVehicleId}"] .edit-vehicle-name`);
+        if (firstInput) { firstInput.focus(); firstInput.select(); }
+      }
     }
 
     // --- Render ---
