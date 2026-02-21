@@ -317,6 +317,9 @@ function broadcast(data) {
 }
 
 wss.on('connection', (ws) => {
+  ws.isAlive = true;
+  ws.on('pong', () => { ws.isAlive = true; });
+
   // Send initial data on connect
   const db = getDb();
   try {
@@ -327,6 +330,17 @@ wss.on('connection', (ws) => {
     db.close();
   }
 });
+
+// Ping all clients every 30s; terminate any that don't respond
+const heartbeat = setInterval(() => {
+  wss.clients.forEach(ws => {
+    if (!ws.isAlive) return ws.terminate();
+    ws.isAlive = false;
+    ws.ping();
+  });
+}, 30_000);
+
+wss.on('close', () => clearInterval(heartbeat));
 
 server.listen(PORT, () => {
   console.log(`In/Out Board running at http://localhost:${PORT}`);
