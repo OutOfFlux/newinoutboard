@@ -444,8 +444,7 @@
         </div>
         <div class="form-group">
           <label for="addDept">Department</label>
-          <input type="text" id="addDept" list="deptSuggestions" placeholder="Engineering" required maxlength="100">
-          <datalist id="deptSuggestions"></datalist>
+          <select id="addDept" required></select>
         </div>
         <div class="form-group" style="flex:0; min-width:auto;">
           <label>&nbsp;</label>
@@ -503,12 +502,44 @@
         </table>
       </div>
     </div>
+
+    <!-- Add Department -->
+    <div class="add-form" style="margin-top:24px;">
+      <h2>Add Department</h2>
+      <form id="addDeptForm" class="form-row">
+        <div class="form-group">
+          <label for="addDeptName">Department Name</label>
+          <input type="text" id="addDeptName" placeholder="Engineering" required maxlength="100">
+        </div>
+        <div class="form-group" style="flex:0; min-width:auto;">
+          <label>&nbsp;</label>
+          <button type="submit" class="btn btn-primary">Add Department</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Department List -->
+    <div class="employee-list">
+      <h2>Departments <span class="emp-count" id="deptCount"></span></h2>
+      <div style="overflow-x:auto;">
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Employees</th>
+              <th style="width:1%"></th>
+            </tr>
+          </thead>
+          <tbody id="deptTableBody"></tbody>
+        </table>
+      </div>
+    </div>
   </div>
 
   <!-- Delete confirmation dialog -->
   <div class="confirm-overlay" id="confirmOverlay">
     <div class="confirm-dialog">
-      <h3>Remove Employee</h3>
+      <h3 id="confirmTitle">Confirm Remove</h3>
       <p id="confirmMsg">Are you sure you want to remove this employee?</p>
       <div class="confirm-actions">
         <button class="btn btn-ghost" id="confirmCancel">Cancel</button>
@@ -560,10 +591,13 @@
     // --- State ---
     let employees = [];
     let vehicles = [];
+    let departments = [];
     let editingId = null; // currently editing employee row
     let editingVehicleId = null; // currently editing vehicle row
+    let editingDeptId = null; // currently editing department row
     let deletingId = null; // pending delete (employee)
     let deletingVehicleId = null; // pending delete (vehicle)
+    let deletingDeptId = null; // pending delete (department)
 
     // --- DOM ---
     const tableBody = document.getElementById('tableBody');
@@ -571,11 +605,15 @@
     const addForm = document.getElementById('addForm');
     const addName = document.getElementById('addName');
     const addDept = document.getElementById('addDept');
-    const deptSuggestions = document.getElementById('deptSuggestions');
     const vehicleTableBody = document.getElementById('vehicleTableBody');
     const vehicleCount = document.getElementById('vehicleCount');
     const addVehicleForm = document.getElementById('addVehicleForm');
     const addVehicleName = document.getElementById('addVehicleName');
+    const addDeptForm = document.getElementById('addDeptForm');
+    const addDeptName = document.getElementById('addDeptName');
+    const deptTableBody = document.getElementById('deptTableBody');
+    const deptCount = document.getElementById('deptCount');
+    const confirmTitle = document.getElementById('confirmTitle');
     const confirmOverlay = document.getElementById('confirmOverlay');
     const confirmMsg = document.getElementById('confirmMsg');
     const confirmCancel = document.getElementById('confirmCancel');
@@ -609,24 +647,27 @@
         if (data.type === 'init') {
           employees = data.employees;
           vehicles = data.vehicles || [];
-          refreshDeptSuggestions();
+          departments = data.departments || [];
+          refreshAddDeptSelect();
           render();
           renderVehicles();
+          renderDepartments();
         } else if (data.type === 'employee_updated') {
           const idx = employees.findIndex(e => e.id === data.employee.id);
           if (idx !== -1) employees[idx] = data.employee;
-          refreshDeptSuggestions();
           render();
-          renderVehicles(); // vehicle status column references employees
+          renderVehicles();
+          renderDepartments();
         } else if (data.type === 'employee_added') {
           employees.push(data.employee);
           employees.sort((a, b) => a.name.localeCompare(b.name));
-          refreshDeptSuggestions();
           render();
+          renderDepartments();
         } else if (data.type === 'employee_removed') {
           employees = employees.filter(e => e.id !== data.id);
           render();
           renderVehicles();
+          renderDepartments();
         } else if (data.type === 'vehicle_added') {
           vehicles.push(data.vehicle);
           vehicles.sort((a, b) => a.name.localeCompare(b.name));
@@ -638,6 +679,21 @@
         } else if (data.type === 'vehicle_removed') {
           vehicles = vehicles.filter(v => v.id !== data.id);
           renderVehicles();
+        } else if (data.type === 'department_added') {
+          departments.push(data.department);
+          departments.sort((a, b) => a.name.localeCompare(b.name));
+          refreshAddDeptSelect();
+          renderDepartments();
+        } else if (data.type === 'department_updated') {
+          const idx = departments.findIndex(d => d.id === data.department.id);
+          if (idx !== -1) departments[idx] = data.department;
+          departments.sort((a, b) => a.name.localeCompare(b.name));
+          refreshAddDeptSelect();
+          renderDepartments();
+        } else if (data.type === 'department_removed') {
+          departments = departments.filter(d => d.id !== data.id);
+          refreshAddDeptSelect();
+          renderDepartments();
         }
       });
     }
@@ -671,15 +727,17 @@
       return res.json();
     }
 
-    // --- Department suggestions ---
-    function refreshDeptSuggestions() {
-      const depts = [...new Set(employees.map(e => e.department))].sort();
-      deptSuggestions.innerHTML = '';
-      depts.forEach(d => {
+    // --- Rebuild the Add Employee department dropdown ---
+    function refreshAddDeptSelect() {
+      const current = addDept.value;
+      addDept.innerHTML = '<option value="">— Select department —</option>';
+      departments.forEach(d => {
         const opt = document.createElement('option');
-        opt.value = d;
-        deptSuggestions.appendChild(opt);
+        opt.value = d.name;
+        opt.textContent = d.name;
+        addDept.appendChild(opt);
       });
+      if (current && departments.some(d => d.name === current)) addDept.value = current;
     }
 
     // --- Add employee ---
@@ -700,6 +758,21 @@
       }
     });
 
+    // --- Add department ---
+    addDeptForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const name = addDeptName.value.trim();
+      if (!name) return;
+      try {
+        await apiPost('/departments', { name });
+        addDeptName.value = '';
+        addDeptName.focus();
+        showToast(`Added department "${name}"`);
+      } catch (err) {
+        showToast('Failed to add department', true);
+      }
+    });
+
     // --- Add vehicle ---
     addVehicleForm.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -717,21 +790,28 @@
     });
 
     // --- Delete flow ---
-    confirmCancel.addEventListener('click', () => {
+    function closeConfirm() {
       deletingId = null;
       deletingVehicleId = null;
+      deletingDeptId = null;
       confirmOverlay.classList.remove('show');
-    });
+    }
 
-    confirmOverlay.addEventListener('click', (e) => {
-      if (e.target === confirmOverlay) {
-        deletingId = null;
-        deletingVehicleId = null;
-        confirmOverlay.classList.remove('show');
-      }
-    });
+    confirmCancel.addEventListener('click', closeConfirm);
+    confirmOverlay.addEventListener('click', (e) => { if (e.target === confirmOverlay) closeConfirm(); });
 
     confirmDelete.addEventListener('click', async () => {
+      if (deletingDeptId) {
+        const d = departments.find(d => d.id === deletingDeptId);
+        try {
+          await apiDelete(`/departments/${deletingDeptId}`);
+          showToast(`Removed department "${d ? d.name : ''}"`);
+        } catch (err) {
+          showToast('Failed to remove department', true);
+        }
+        closeConfirm();
+        return;
+      }
       if (deletingVehicleId) {
         const v = vehicles.find(v => v.id === deletingVehicleId);
         try {
@@ -740,8 +820,7 @@
         } catch (err) {
           showToast('Failed to remove vehicle', true);
         }
-        deletingVehicleId = null;
-        confirmOverlay.classList.remove('show');
+        closeConfirm();
         return;
       }
       if (!deletingId) return;
@@ -752,13 +831,14 @@
       } catch (err) {
         showToast('Failed to remove employee', true);
       }
-      deletingId = null;
-      confirmOverlay.classList.remove('show');
+      closeConfirm();
     });
 
     function promptDelete(emp) {
       deletingId = emp.id;
       deletingVehicleId = null;
+      deletingDeptId = null;
+      confirmTitle.textContent = 'Remove Employee';
       confirmMsg.textContent = `Are you sure you want to remove ${emp.name} (${emp.department})?`;
       confirmOverlay.classList.add('show');
     }
@@ -767,9 +847,23 @@
       const usedBy = employees.find(e => e.vehicle_id === vehicle.id);
       deletingVehicleId = vehicle.id;
       deletingId = null;
+      deletingDeptId = null;
+      confirmTitle.textContent = 'Remove Vehicle';
       confirmMsg.textContent = usedBy
         ? `Remove "${vehicle.name}"? It is currently checked out by ${usedBy.name}.`
         : `Are you sure you want to remove "${vehicle.name}"?`;
+      confirmOverlay.classList.add('show');
+    }
+
+    function promptDeleteDept(dept) {
+      const count = employees.filter(e => e.department === dept.name).length;
+      deletingDeptId = dept.id;
+      deletingId = null;
+      deletingVehicleId = null;
+      confirmTitle.textContent = 'Remove Department';
+      confirmMsg.textContent = count > 0
+        ? `Remove "${dept.name}"? ${count} employee${count !== 1 ? 's' : ''} currently use this department. They will keep their department label.`
+        : `Are you sure you want to remove "${dept.name}"?`;
       confirmOverlay.classList.add('show');
     }
 
@@ -958,17 +1052,23 @@
         // Department
         const tdDept = document.createElement('td');
         if (isEditing) {
-          const input = document.createElement('input');
-          input.type = 'text';
-          input.className = 'edit-dept';
-          input.maxLength = 100;
-          input.value = emp.department;
-          input.setAttribute('list', 'deptSuggestions');
-          input.addEventListener('keydown', (e) => {
+          const deptSel = document.createElement('select');
+          deptSel.className = 'edit-dept';
+          // Include current value even if not in departments list (legacy data)
+          const deptOptions = departments.map(d => d.name);
+          if (emp.department && !deptOptions.includes(emp.department)) deptOptions.unshift(emp.department);
+          deptOptions.forEach(name => {
+            const opt = document.createElement('option');
+            opt.value = name;
+            opt.textContent = name;
+            if (name === emp.department) opt.selected = true;
+            deptSel.appendChild(opt);
+          });
+          deptSel.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') { e.preventDefault(); saveEdit(emp.id); }
             if (e.key === 'Escape') cancelEdit();
           });
-          tdDept.appendChild(input);
+          tdDept.appendChild(deptSel);
         } else {
           tdDept.textContent = emp.department;
         }
@@ -1026,6 +1126,101 @@
         if (firstInput) { firstInput.focus(); firstInput.select(); }
       }
     }
+
+    // --- Departments ---
+    function startEditingDept(id) { editingDeptId = id; renderDepartments(); }
+    function cancelDeptEdit() { editingDeptId = null; renderDepartments(); }
+
+    async function saveDeptEdit(id) {
+      const row = deptTableBody.querySelector(`tr[data-dept-id="${id}"]`);
+      if (!row) return;
+      const input = row.querySelector('.edit-dept-name');
+      if (!input) return;
+      const name = input.value.trim();
+      if (!name) { showToast('Name cannot be empty', true); return; }
+      try {
+        await apiPut(`/departments/${id}`, { name });
+        showToast(`Renamed to "${name}"`);
+      } catch (err) {
+        showToast('Failed to rename department', true);
+      }
+      editingDeptId = null;
+    }
+
+    function renderDepartments() {
+      deptCount.textContent = `(${departments.length})`;
+      deptTableBody.innerHTML = '';
+      departments.forEach(dept => {
+        const isEditing = editingDeptId === dept.id;
+        const empCount = employees.filter(e => e.department === dept.name).length;
+        const tr = document.createElement('tr');
+        tr.dataset.deptId = dept.id;
+
+        // Name
+        const tdName = document.createElement('td');
+        if (isEditing) {
+          const input = document.createElement('input');
+          input.type = 'text';
+          input.className = 'edit-dept-name';
+          input.maxLength = 100;
+          input.value = dept.name;
+          input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') { e.preventDefault(); saveDeptEdit(dept.id); }
+            if (e.key === 'Escape') cancelDeptEdit();
+          });
+          tdName.appendChild(input);
+        } else {
+          tdName.textContent = dept.name;
+        }
+        tr.appendChild(tdName);
+
+        // Employee count
+        const tdCount = document.createElement('td');
+        const badge = document.createElement('span');
+        badge.className = empCount > 0 ? 'badge yellow' : 'badge green';
+        badge.textContent = empCount > 0 ? `${empCount} employee${empCount !== 1 ? 's' : ''}` : 'Empty';
+        tdCount.appendChild(badge);
+        tr.appendChild(tdCount);
+
+        // Actions
+        const tdActions = document.createElement('td');
+        const actionsDiv = document.createElement('div');
+        actionsDiv.className = 'actions-cell';
+        if (isEditing) {
+          const saveBtn = document.createElement('button');
+          saveBtn.className = 'btn btn-primary btn-sm';
+          saveBtn.textContent = 'Save';
+          saveBtn.addEventListener('click', () => saveDeptEdit(dept.id));
+          actionsDiv.appendChild(saveBtn);
+          const cancelBtn = document.createElement('button');
+          cancelBtn.className = 'btn btn-ghost btn-sm';
+          cancelBtn.textContent = 'Cancel';
+          cancelBtn.addEventListener('click', cancelDeptEdit);
+          actionsDiv.appendChild(cancelBtn);
+        } else {
+          const editBtn = document.createElement('button');
+          editBtn.className = 'btn btn-ghost btn-sm';
+          editBtn.textContent = 'Edit';
+          editBtn.addEventListener('click', () => startEditingDept(dept.id));
+          actionsDiv.appendChild(editBtn);
+          const deleteBtn = document.createElement('button');
+          deleteBtn.className = 'btn btn-danger btn-sm';
+          deleteBtn.textContent = 'Remove';
+          deleteBtn.addEventListener('click', () => promptDeleteDept(dept));
+          actionsDiv.appendChild(deleteBtn);
+        }
+        tdActions.appendChild(actionsDiv);
+        tr.appendChild(tdActions);
+
+        deptTableBody.appendChild(tr);
+      });
+
+      if (editingDeptId) {
+        const firstInput = deptTableBody.querySelector(`tr[data-dept-id="${editingDeptId}"] .edit-dept-name`);
+        if (firstInput) { firstInput.focus(); firstInput.select(); }
+      }
+    }
+
     // --- Logo upload ---
     const logoFile = document.getElementById('logoFile');
     const logoPreview = document.getElementById('logoPreview');

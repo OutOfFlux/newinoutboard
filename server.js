@@ -325,6 +325,84 @@ app.delete('/vehicles/:id', requireAuthApi, (req, res) => {
   }
 });
 
+// GET /departments — return all departments
+app.get('/departments', (req, res) => {
+  const db = getDb();
+  try {
+    res.json(db.prepare('SELECT * FROM departments ORDER BY name ASC').all());
+  } finally {
+    db.close();
+  }
+});
+
+// POST /departments — add a new department
+app.post('/departments', requireAuthApi, (req, res) => {
+  const { name } = req.body;
+  if (!name) return res.status(400).json({ error: 'Name is required' });
+  if (tooLong(name, MAX.department)) return res.status(400).json({ error: `Name must be ${MAX.department} characters or fewer` });
+
+  const db = getDb();
+  try {
+    const result = db.prepare('INSERT INTO departments (name) VALUES (?)').run(name.trim());
+    const department = db.prepare('SELECT * FROM departments WHERE id = ?').get(result.lastInsertRowid);
+    broadcast({ type: 'department_added', department });
+    res.status(201).json(department);
+  } catch (e) {
+    if (e.message.includes('UNIQUE constraint')) return res.status(400).json({ error: 'Department already exists' });
+    throw e;
+  } finally {
+    db.close();
+  }
+});
+
+// PUT /departments/:id — rename a department (cascades to employees)
+app.put('/departments/:id', requireAuthApi, (req, res) => {
+  const { id } = req.params;
+  const { name } = req.body;
+  if (!name) return res.status(400).json({ error: 'Name is required' });
+  if (tooLong(name, MAX.department)) return res.status(400).json({ error: `Name must be ${MAX.department} characters or fewer` });
+
+  const db = getDb();
+  try {
+    const existing = db.prepare('SELECT * FROM departments WHERE id = ?').get(Number(id));
+    if (!existing) return res.status(404).json({ error: 'Department not found' });
+
+    db.prepare('UPDATE departments SET name = ? WHERE id = ?').run(name.trim(), Number(id));
+    // Cascade rename to all employees in this department
+    db.prepare("UPDATE employees SET department = ?, last_changed = datetime('now') WHERE department = ?")
+      .run(name.trim(), existing.name);
+
+    const department = db.prepare('SELECT * FROM departments WHERE id = ?').get(Number(id));
+    broadcast({ type: 'department_updated', department, oldName: existing.name });
+    // Broadcast updated employees so all boards refresh
+    db.prepare(`${EMPLOYEE_SELECT} WHERE e.department = ?`).all(name.trim())
+      .forEach(employee => broadcast({ type: 'employee_updated', employee }));
+
+    res.json(department);
+  } catch (e) {
+    if (e.message.includes('UNIQUE constraint')) return res.status(400).json({ error: 'Department already exists' });
+    throw e;
+  } finally {
+    db.close();
+  }
+});
+
+// DELETE /departments/:id — remove a department
+app.delete('/departments/:id', requireAuthApi, (req, res) => {
+  const { id } = req.params;
+  const db = getDb();
+  try {
+    const department = db.prepare('SELECT * FROM departments WHERE id = ?').get(Number(id));
+    if (!department) return res.status(404).json({ error: 'Department not found' });
+
+    db.prepare('DELETE FROM departments WHERE id = ?').run(Number(id));
+    broadcast({ type: 'department_removed', id: Number(id) });
+    res.json({ success: true, id: Number(id) });
+  } finally {
+    db.close();
+  }
+});
+
 // Create HTTP server and attach WebSocket
 const server = http.createServer(app);
 const wss = new WebSocketServer({ server });
@@ -347,7 +425,8 @@ wss.on('connection', (ws) => {
   try {
     const employees = db.prepare(`${EMPLOYEE_SELECT} ORDER BY e.name ASC`).all();
     const vehicles = db.prepare('SELECT * FROM vehicles ORDER BY name ASC').all();
-    ws.send(JSON.stringify({ type: 'init', employees, vehicles }));
+    const departments = db.prepare('SELECT * FROM departments ORDER BY name ASC').all();
+    ws.send(JSON.stringify({ type: 'init', employees, vehicles, departments }));
   } finally {
     db.close();
   }

@@ -551,6 +551,7 @@
     // --- State ---
     let employees = [];
     let vehicles = [];
+    let departments = [];
     let selectedIds = new Set();
     let sortCol = 'name';
     let sortAsc = true;
@@ -614,9 +615,18 @@
         if (data.type === 'init') {
           employees = data.employees;
           vehicles = data.vehicles || [];
+          departments = data.departments || [];
           selectedIds.clear();
           refreshDeptFilter();
           render();
+        } else if (data.type === 'department_added') {
+          departments.push(data.department);
+          departments.sort((a, b) => a.name.localeCompare(b.name));
+        } else if (data.type === 'department_updated') {
+          const idx = departments.findIndex(d => d.id === data.department.id);
+          if (idx !== -1) departments[idx] = data.department;
+        } else if (data.type === 'department_removed') {
+          departments = departments.filter(d => d.id !== data.id);
         } else if (data.type === 'employee_updated') {
           const idx = employees.findIndex(e => e.id === data.employee.id);
           if (idx !== -1) {

@@ -36,6 +36,17 @@ function initDb() {
   } catch (e) {
     // Column already exists, ignore
   }
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS departments (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL UNIQUE
+    )
+  `);
+  // Seed departments from any existing employee department values
+  const insertDept = db.prepare('INSERT OR IGNORE INTO departments (name) VALUES (?)');
+  db.prepare("SELECT DISTINCT department FROM employees WHERE department != ''")
+    .all()
+    .forEach(({ department }) => insertDept.run(department));
   db.close();
 }
 
