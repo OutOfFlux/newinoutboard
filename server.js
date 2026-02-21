@@ -1,5 +1,6 @@
 const express = require('express');
 const http = require('http');
+const fs = require('fs');
 const { WebSocketServer } = require('ws');
 const path = require('path');
 const { getDb, initDb } = require('./db');
@@ -24,6 +25,24 @@ const EMPLOYEE_SELECT = `
 // GET /version
 app.get('/version', (_req, res) => {
   res.json({ version });
+});
+
+// POST /logo — upload a new logo image (base64 JSON body)
+app.post('/logo', (req, res) => {
+  const { image } = req.body;
+  if (!image) return res.status(400).json({ error: 'No image provided' });
+
+  const match = image.match(/^data:(image\/[a-zA-Z+.-]+);base64,(.+)$/);
+  if (!match) return res.status(400).json({ error: 'Invalid image data' });
+
+  const buffer = Buffer.from(match[2], 'base64');
+  if (buffer.length > 2 * 1024 * 1024) {
+    return res.status(400).json({ error: 'Image must be under 2 MB' });
+  }
+
+  const logoPath = path.join(__dirname, 'public', 'logo.png');
+  fs.writeFileSync(logoPath, buffer);
+  res.json({ success: true });
 });
 
 // GET /employees — return all employees

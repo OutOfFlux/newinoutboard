@@ -403,6 +403,34 @@
       </div>
     </div>
 
+    <!-- Logo -->
+    <div class="add-form" style="margin-bottom:24px;">
+      <h2>Logo</h2>
+      <div style="display:flex; gap:24px; align-items:flex-start; flex-wrap:wrap; margin-top:4px;">
+        <div>
+          <img id="logoPreview" src="/logo.png" alt="Current logo"
+            style="display:block; width:120px; height:40px; object-fit:contain; border:1px solid var(--border-main); border-radius:4px; padding:6px; background:var(--bg-page);">
+          <p style="font-size:0.72rem; color:var(--text-muted); margin-top:4px; text-align:center;">Current logo</p>
+        </div>
+        <div style="flex:1; min-width:260px;">
+          <div class="form-group" style="margin-bottom:10px;">
+            <label for="logoFile">Replace Logo</label>
+            <input type="file" id="logoFile" accept="image/png,image/jpeg,image/gif,image/webp"
+              style="padding:4px 0; color:var(--text-primary);">
+          </div>
+          <p style="font-size:0.8rem; color:var(--text-secondary); line-height:1.6; margin-bottom:12px;">
+            <strong>Ideal size:</strong> 240&times;80 px (displayed at 120&times;40 px, 2&times; for sharp screens)<br>
+            <strong>Format:</strong> PNG with transparent background recommended<br>
+            <strong>Accepted:</strong> PNG, JPG, GIF, WebP &nbsp;&middot;&nbsp; <strong>Max size:</strong> 2 MB
+          </p>
+          <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+            <button id="logoUploadBtn" class="btn btn-primary" disabled>Upload Logo</button>
+            <span id="logoUploadMsg" style="font-size:0.8rem; color:var(--text-secondary);"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Add Employee -->
     <div class="add-form">
       <h2>Add Employee</h2>
@@ -992,6 +1020,64 @@
         if (firstInput) { firstInput.focus(); firstInput.select(); }
       }
     }
+    // --- Logo upload ---
+    const logoFile = document.getElementById('logoFile');
+    const logoPreview = document.getElementById('logoPreview');
+    const logoUploadBtn = document.getElementById('logoUploadBtn');
+    const logoUploadMsg = document.getElementById('logoUploadMsg');
+
+    logoFile.addEventListener('change', () => {
+      const file = logoFile.files[0];
+      if (!file) { logoUploadBtn.disabled = true; logoUploadMsg.textContent = ''; return; }
+
+      if (file.size > 2 * 1024 * 1024) {
+        logoUploadMsg.textContent = 'File exceeds 2 MB limit.';
+        logoUploadBtn.disabled = true;
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        logoPreview.src = e.target.result;
+        logoUploadBtn.disabled = false;
+        logoUploadMsg.textContent = '';
+      };
+      reader.readAsDataURL(file);
+    });
+
+    logoUploadBtn.addEventListener('click', () => {
+      const file = logoFile.files[0];
+      if (!file) return;
+
+      logoUploadBtn.disabled = true;
+      logoUploadMsg.textContent = 'Uploading…';
+
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        try {
+          const res = await fetch('/logo', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ image: e.target.result }),
+          });
+          if (!res.ok) {
+            const err = await res.json();
+            throw new Error(err.error || 'Upload failed');
+          }
+          // Cache-bust so the browser reloads the updated file
+          logoPreview.src = `/logo.png?t=${Date.now()}`;
+          logoFile.value = '';
+          logoUploadMsg.textContent = 'Logo updated!';
+          showToast('Logo updated successfully');
+          setTimeout(() => { logoUploadMsg.textContent = ''; }, 3000);
+        } catch (err) {
+          logoUploadMsg.textContent = err.message;
+          showToast(err.message, true);
+        }
+        logoUploadBtn.disabled = false;
+      };
+      reader.readAsDataURL(file);
+    });
   </script>
 </body>
 </html>
