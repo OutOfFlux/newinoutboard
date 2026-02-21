@@ -380,6 +380,84 @@
     [data-theme="dark"] .dark-toggle-track .thumb {
       transform: translateX(16px);
     }
+    /* Checkbox column */
+    .col-check {
+      width: 40px;
+      padding: 8px 4px 8px 14px !important;
+    }
+
+    thead .col-check { padding: 12px 4px 12px 14px !important; }
+
+    .col-check input[type="checkbox"] {
+      width: 15px;
+      height: 15px;
+      cursor: pointer;
+      accent-color: #3b82f6;
+      vertical-align: middle;
+    }
+
+    /* Selected row highlight */
+    tbody tr.row-selected {
+      box-shadow: inset 4px 0 0 #3b82f6;
+    }
+
+    /* Bulk action bar */
+    .bulk-bar {
+      display: none;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      padding: 10px 16px;
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      border-radius: 8px;
+      margin-bottom: 12px;
+      font-size: 0.875rem;
+    }
+
+    [data-theme="dark"] .bulk-bar {
+      background: #1e3a5f;
+      border-color: #1d4ed8;
+    }
+
+    .bulk-bar.visible { display: flex; }
+
+    .bulk-count {
+      font-weight: 600;
+      color: #1d4ed8;
+      white-space: nowrap;
+      min-width: 100px;
+    }
+
+    [data-theme="dark"] .bulk-count { color: #93c5fd; }
+
+    .bulk-fields {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      flex: 1;
+    }
+
+    .bulk-fields label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      white-space: nowrap;
+    }
+
+    .bulk-fields select,
+    .bulk-fields input[type="text"] {
+      padding: 5px 8px;
+      border: 1px solid var(--border-input);
+      border-radius: 4px;
+      font-size: 0.8rem;
+      background: var(--bg-input);
+      color: var(--text-primary);
+    }
+
+    .bulk-actions { display: flex; gap: 6px; flex-shrink: 0; }
+
     /* Footer */
     .page-footer {
       text-align: center;
@@ -418,10 +496,29 @@
       <input type="text" id="nameSearch" placeholder="Search by name...">
     </div>
 
+    <div class="bulk-bar" id="bulkBar">
+      <span class="bulk-count" id="bulkCount"></span>
+      <div class="bulk-fields">
+        <label for="bulkStatus">Status:</label>
+        <select id="bulkStatus"><option value="">(no change)</option></select>
+        <label for="bulkVehicle">Vehicle:</label>
+        <select id="bulkVehicle"><option value="NOCHANGE">(no change)</option><option value="">(None)</option></select>
+        <label for="bulkComment">Comment:</label>
+        <input type="text" id="bulkComment" placeholder="(no change)" style="min-width:140px;">
+        <label for="bulkReturn">Est. Return:</label>
+        <input type="text" id="bulkReturn" placeholder="(no change)" style="min-width:110px;">
+      </div>
+      <div class="bulk-actions">
+        <button id="bulkApply" class="btn btn-primary btn-sm">Apply</button>
+        <button id="bulkClear" class="btn btn-ghost btn-sm">Clear</button>
+      </div>
+    </div>
+
     <div class="table-wrap">
       <table>
         <thead>
           <tr>
+            <th class="col-check"><input type="checkbox" id="selectAll" title="Select/deselect all visible"></th>
             <th class="sortable" data-sort="name">Name <span class="sort-arrow" id="arrow-name">&#9650;</span></th>
             <th class="sortable" data-sort="department">Department <span class="sort-arrow" id="arrow-department"></span></th>
             <th class="sortable" data-sort="status">Status <span class="sort-arrow" id="arrow-status"></span></th>
@@ -454,6 +551,7 @@
     // --- State ---
     let employees = [];
     let vehicles = [];
+    let selectedIds = new Set();
     let sortCol = 'name';
     let sortAsc = true;
     let ws = null;
@@ -466,6 +564,15 @@
     const connDot = document.getElementById('connDot');
     const connLabel = document.getElementById('connLabel');
     const darkToggle = document.getElementById('darkToggle');
+    const bulkBar = document.getElementById('bulkBar');
+    const bulkCount = document.getElementById('bulkCount');
+    const bulkStatus = document.getElementById('bulkStatus');
+    const bulkComment = document.getElementById('bulkComment');
+    const bulkVehicle = document.getElementById('bulkVehicle');
+    const bulkReturn = document.getElementById('bulkReturn');
+    const bulkApply = document.getElementById('bulkApply');
+    const bulkClear = document.getElementById('bulkClear');
+    const selectAll = document.getElementById('selectAll');
 
     // --- Dark mode ---
     function applyTheme(dark) {
@@ -507,6 +614,7 @@
         if (data.type === 'init') {
           employees = data.employees;
           vehicles = data.vehicles || [];
+          selectedIds.clear();
           refreshDeptFilter();
           render();
         } else if (data.type === 'employee_updated') {
@@ -682,6 +790,7 @@
         const color = statusColor(emp.status);
         if (color === 'yellow') tr.classList.add('row-yellow');
         if (color === 'red') tr.classList.add('row-red');
+        if (selectedIds.has(emp.id)) tr.classList.add('row-selected');
 
         if (emp.status !== 'IN') {
           tr.title = 'Double-click to mark IN';
@@ -695,6 +804,22 @@
             render();
           });
         }
+
+        // Checkbox
+        const tdCheck = document.createElement('td');
+        tdCheck.className = 'col-check';
+        const cb = document.createElement('input');
+        cb.type = 'checkbox';
+        cb.checked = selectedIds.has(emp.id);
+        cb.addEventListener('change', () => {
+          if (cb.checked) selectedIds.add(emp.id);
+          else selectedIds.delete(emp.id);
+          tr.classList.toggle('row-selected', cb.checked);
+          updateBulkBar();
+        });
+        tdCheck.addEventListener('dblclick', e => e.stopPropagation());
+        tdCheck.appendChild(cb);
+        tr.appendChild(tdCheck);
 
         // Name
         const tdName = document.createElement('td');
@@ -756,6 +881,8 @@
 
         tableBody.appendChild(tr);
       });
+
+      updateBulkBar();
     }
 
     // --- Inline editors ---
@@ -764,6 +891,125 @@
       { label: 'Unavailable', statuses: YELLOW_STATUSES },
       { label: 'Out of Office', statuses: RED_STATUSES },
     ];
+
+    // Populate bulk status dropdown from STATUS_GROUPS
+    STATUS_GROUPS.forEach(group => {
+      const og = document.createElement('optgroup');
+      og.label = group.label;
+      group.statuses.forEach(s => {
+        const opt = document.createElement('option');
+        opt.value = s;
+        opt.textContent = s;
+        og.appendChild(opt);
+      });
+      bulkStatus.appendChild(og);
+    });
+
+    // --- Bulk selection ---
+    function updateBulkBar() {
+      const visible = getFilteredSorted();
+      const visibleSelected = visible.filter(e => selectedIds.has(e.id));
+      const total = selectedIds.size;
+
+      if (total > 0) {
+        bulkBar.classList.add('visible');
+        bulkCount.textContent = `${total} selected`;
+      } else {
+        bulkBar.classList.remove('visible');
+      }
+
+      const allVisible = visible.length > 0 && visible.every(e => selectedIds.has(e.id));
+      const someVisible = visibleSelected.length > 0;
+      selectAll.checked = allVisible;
+      selectAll.indeterminate = !allVisible && someVisible;
+
+      // Rebuild vehicle options, preserving current selection
+      const prevVehicle = bulkVehicle.value;
+      bulkVehicle.innerHTML = '<option value="NOCHANGE">(no change)</option><option value="">(None)</option>';
+      vehicles.forEach(v => {
+        const opt = document.createElement('option');
+        opt.value = v.id;
+        opt.textContent = v.name;
+        bulkVehicle.appendChild(opt);
+      });
+      if ([...bulkVehicle.options].some(o => o.value === prevVehicle)) {
+        bulkVehicle.value = prevVehicle;
+      }
+    }
+
+    selectAll.addEventListener('change', () => {
+      getFilteredSorted().forEach(e => {
+        if (selectAll.checked) selectedIds.add(e.id);
+        else selectedIds.delete(e.id);
+      });
+      render();
+    });
+
+    bulkClear.addEventListener('click', () => {
+      selectedIds.clear();
+      bulkStatus.value = '';
+      bulkVehicle.value = 'NOCHANGE';
+      bulkComment.value = '';
+      bulkReturn.value = '';
+      render();
+    });
+
+    bulkApply.addEventListener('click', () => {
+      if (selectedIds.size === 0) return;
+      const statusVal = bulkStatus.value;
+      const vehicleVal = bulkVehicle.value; // 'NOCHANGE' | '' | '<id>'
+      const commentVal = bulkComment.value.trim();
+      const returnVal = bulkReturn.value.trim();
+      if (!statusVal && vehicleVal === 'NOCHANGE' && !commentVal && !returnVal) return;
+
+      bulkApply.disabled = true;
+      selectedIds.forEach(id => {
+        const emp = employees.find(e => e.id === id);
+        if (!emp) return;
+        const fields = {};
+        if (statusVal) fields.status = statusVal;
+        // Vehicle: skip if setting status=IN (server clears it anyway)
+        if (vehicleVal !== 'NOCHANGE' && statusVal !== 'IN') {
+          const vehicleId = vehicleVal === '' ? null : Number(vehicleVal);
+          fields.vehicle_id = vehicleId;
+          // Auto-OUT if assigning a vehicle to someone currently IN
+          if (vehicleId && emp.status === 'IN' && !statusVal) {
+            fields.status = 'OUT';
+          }
+        }
+        if (commentVal) fields.comment = commentVal;
+        if (returnVal) fields.estimated_return = returnVal;
+        if (Object.keys(fields).length === 0) return;
+
+        // Optimistic update
+        if (fields.status === 'IN') {
+          emp.status = 'IN';
+          emp.comment = '';
+          emp.estimated_return = '';
+          emp.vehicle_id = null;
+          emp.vehicle_name = '';
+        } else {
+          if (fields.status) emp.status = fields.status;
+          if (fields.vehicle_id !== undefined) {
+            emp.vehicle_id = fields.vehicle_id;
+            emp.vehicle_name = fields.vehicle_id
+              ? (vehicles.find(v => v.id === fields.vehicle_id) || {}).name || ''
+              : '';
+          }
+          if (fields.comment !== undefined) emp.comment = fields.comment;
+          if (fields.estimated_return !== undefined) emp.estimated_return = fields.estimated_return;
+        }
+        updateEmployee(id, fields);
+      });
+
+      bulkStatus.value = '';
+      bulkVehicle.value = 'NOCHANGE';
+      bulkComment.value = '';
+      bulkReturn.value = '';
+      selectedIds.clear();
+      bulkApply.disabled = false;
+      render();
+    });
 
     function openStatusEditor(td, emp) {
       td.innerHTML = '';
