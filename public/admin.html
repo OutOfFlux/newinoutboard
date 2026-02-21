@@ -408,7 +408,7 @@
       <h2>Logo</h2>
       <div style="display:flex; gap:24px; align-items:flex-start; flex-wrap:wrap; margin-top:4px;">
         <div>
-          <img id="logoPreview" src="/logo.png" alt="Current logo"
+          <img id="logoPreview" src="/images/logo.png" alt="Current logo"
             style="display:block; width:120px; height:40px; object-fit:contain; border:1px solid var(--border-main); border-radius:4px; padding:6px; background:var(--bg-page);">
           <p style="font-size:0.72rem; color:var(--text-muted); margin-top:4px; text-align:center;">Current logo</p>
         </div>
@@ -1065,7 +1065,7 @@
             throw new Error(err.error || 'Upload failed');
           }
           // Cache-bust so the browser reloads the updated file
-          logoPreview.src = `/logo.png?t=${Date.now()}`;
+          logoPreview.src = `/images/logo.png?t=${Date.now()}`;
           logoFile.value = '';
           logoUploadMsg.textContent = 'Logo updated!';
           showToast('Logo updated successfully');

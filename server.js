@@ -40,7 +40,7 @@ app.post('/logo', (req, res) => {
     return res.status(400).json({ error: 'Image must be under 2 MB' });
   }
 
-  const logoPath = path.join(__dirname, 'public', 'logo.png');
+  const logoPath = path.join(__dirname, 'public', 'images', 'logo.png');
   fs.writeFileSync(logoPath, buffer);
   res.json({ success: true });
 });
