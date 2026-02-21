@@ -440,11 +440,11 @@
       <form id="addForm" class="form-row">
         <div class="form-group">
           <label for="addName">Name</label>
-          <input type="text" id="addName" placeholder="Jane Doe" required>
+          <input type="text" id="addName" placeholder="Jane Doe" required maxlength="100">
         </div>
         <div class="form-group">
           <label for="addDept">Department</label>
-          <input type="text" id="addDept" list="deptSuggestions" placeholder="Engineering" required>
+          <input type="text" id="addDept" list="deptSuggestions" placeholder="Engineering" required maxlength="100">
           <datalist id="deptSuggestions"></datalist>
         </div>
         <div class="form-group" style="flex:0; min-width:auto;">
@@ -478,7 +478,7 @@
       <form id="addVehicleForm" class="form-row">
         <div class="form-group">
           <label for="addVehicleName">Vehicle Name</label>
-          <input type="text" id="addVehicleName" placeholder="2022 Ford F-150" required>
+          <input type="text" id="addVehicleName" placeholder="2022 Ford F-150" required maxlength="100">
         </div>
         <div class="form-group" style="flex:0; min-width:auto;">
           <label>&nbsp;</label>
@@ -857,6 +857,7 @@
           const input = document.createElement('input');
           input.type = 'text';
           input.className = 'edit-vehicle-name';
+          input.maxLength = 100;
           input.value = vehicle.name;
           input.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') { e.preventDefault(); saveVehicleEdit(vehicle.id); }
@@ -942,6 +943,7 @@
           const input = document.createElement('input');
           input.type = 'text';
           input.className = 'edit-name';
+          input.maxLength = 100;
           input.value = emp.name;
           input.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') { e.preventDefault(); saveEdit(emp.id); }
@@ -959,6 +961,7 @@
           const input = document.createElement('input');
           input.type = 'text';
           input.className = 'edit-dept';
+          input.maxLength = 100;
           input.value = emp.department;
           input.setAttribute('list', 'deptSuggestions');
           input.addEventListener('keydown', (e) => {

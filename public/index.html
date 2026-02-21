@@ -504,9 +504,9 @@
         <label for="bulkVehicle">Vehicle:</label>
         <select id="bulkVehicle"><option value="NOCHANGE">(no change)</option><option value="">(None)</option></select>
         <label for="bulkComment">Comment:</label>
-        <input type="text" id="bulkComment" placeholder="(no change)" style="min-width:140px;">
+        <input type="text" id="bulkComment" placeholder="(no change)" style="min-width:140px;" maxlength="500">
         <label for="bulkReturn">Est. Return:</label>
-        <input type="text" id="bulkReturn" placeholder="(no change)" style="min-width:110px;">
+        <input type="text" id="bulkReturn" placeholder="(no change)" style="min-width:110px;" maxlength="100">
       </div>
       <div class="bulk-actions">
         <button id="bulkApply" class="btn btn-primary btn-sm">Apply</button>
@@ -1091,12 +1091,14 @@
       sel.focus();
     }
 
+    const FIELD_MAXLEN = { name: 100, department: 100, comment: 500, estimated_return: 100 };
     function openTextEditor(td, emp, field, placeholder) {
       td.innerHTML = '';
       const input = document.createElement('input');
       input.type = 'text';
       input.value = emp[field] || '';
       input.placeholder = placeholder;
+      if (FIELD_MAXLEN[field]) input.maxLength = FIELD_MAXLEN[field];
 
       function save() {
         const val = input.value.trim();

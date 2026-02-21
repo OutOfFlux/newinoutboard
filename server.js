@@ -51,6 +51,19 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
+// Request logger
+app.use((req, res, next) => {
+  const start = Date.now();
+  res.on('finish', () => {
+    console.log(`${new Date().toISOString()} ${req.method} ${req.url} ${res.statusCode} ${Date.now() - start}ms`);
+  });
+  next();
+});
+
+// Input length limits
+const MAX = { name: 100, department: 100, comment: 500, estimated_return: 100, vehicle_name: 100 };
+function tooLong(val, max) { return typeof val === 'string' && val.length > max; }
+
 // Protect admin page before static middleware
 app.use('/admin.html', requireAuth);
 app.use(express.static(path.join(__dirname, 'public')));
@@ -117,6 +130,11 @@ app.get('/employees', (req, res) => {
 app.put('/employees/:id', (req, res) => {
   const { id } = req.params;
   const { name, department, status, comment, estimated_return, vehicle_id } = req.body;
+
+  if (tooLong(name, MAX.name)) return res.status(400).json({ error: `Name must be ${MAX.name} characters or fewer` });
+  if (tooLong(department, MAX.department)) return res.status(400).json({ error: `Department must be ${MAX.department} characters or fewer` });
+  if (tooLong(comment, MAX.comment)) return res.status(400).json({ error: `Comment must be ${MAX.comment} characters or fewer` });
+  if (tooLong(estimated_return, MAX.estimated_return)) return res.status(400).json({ error: `Estimated return must be ${MAX.estimated_return} characters or fewer` });
 
   const db = getDb();
   try {
@@ -187,6 +205,8 @@ app.post('/employees', requireAuthApi, (req, res) => {
   if (!name || !department) {
     return res.status(400).json({ error: 'Name and department are required' });
   }
+  if (tooLong(name, MAX.name)) return res.status(400).json({ error: `Name must be ${MAX.name} characters or fewer` });
+  if (tooLong(department, MAX.department)) return res.status(400).json({ error: `Department must be ${MAX.department} characters or fewer` });
 
   const db = getDb();
   try {
@@ -238,6 +258,7 @@ app.post('/vehicles', requireAuthApi, (req, res) => {
   if (!name) {
     return res.status(400).json({ error: 'Name is required' });
   }
+  if (tooLong(name, MAX.vehicle_name)) return res.status(400).json({ error: `Vehicle name must be ${MAX.vehicle_name} characters or fewer` });
 
   const db = getDb();
   try {
@@ -257,6 +278,7 @@ app.put('/vehicles/:id', requireAuthApi, (req, res) => {
   if (!name) {
     return res.status(400).json({ error: 'Name is required' });
   }
+  if (tooLong(name, MAX.vehicle_name)) return res.status(400).json({ error: `Vehicle name must be ${MAX.vehicle_name} characters or fewer` });
 
   const db = getDb();
   try {
