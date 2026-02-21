@@ -683,6 +683,19 @@
         if (color === 'yellow') tr.classList.add('row-yellow');
         if (color === 'red') tr.classList.add('row-red');
 
+        if (emp.status !== 'IN') {
+          tr.title = 'Double-click to mark IN';
+          tr.addEventListener('dblclick', () => {
+            updateEmployee(emp.id, { status: 'IN' });
+            emp.status = 'IN';
+            emp.comment = '';
+            emp.estimated_return = '';
+            emp.vehicle_id = null;
+            emp.vehicle_name = '';
+            render();
+          });
+        }
+
         // Name
         const tdName = document.createElement('td');
         tdName.textContent = emp.name;
