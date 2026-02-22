@@ -8,7 +8,8 @@
       "Bash(timeout:*)",
       "Bash(curl:*)",
       "Bash(python -m json.tool:*)",
-      "Bash(python:*)"
+      "Bash(python:*)",
+      "Bash(git -C /home/mdraper/code/newinoutboard diff)"
     ]
   }
 }

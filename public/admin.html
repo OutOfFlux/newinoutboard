@@ -412,7 +412,7 @@
       <div style="display:flex; gap:24px; align-items:flex-start; flex-wrap:wrap; margin-top:4px;">
         <div>
           <img id="logoPreview" src="/images/logo.png" alt="Current logo"
-            style="display:block; width:120px; height:40px; object-fit:contain; border:1px solid var(--border-main); border-radius:4px; padding:6px; background:var(--bg-page);">
+            style="display:block; max-height:80px; max-width:160px; width:auto; height:auto; object-fit:contain; border:1px solid var(--border-main); border-radius:4px; padding:6px; background:var(--bg-page);">
           <p style="font-size:0.72rem; color:var(--text-muted); margin-top:4px; text-align:center;">Current logo</p>
         </div>
         <div style="flex:1; min-width:260px;">
@@ -422,7 +422,7 @@
               style="padding:4px 0; color:var(--text-primary);">
           </div>
           <p style="font-size:0.8rem; color:var(--text-secondary); line-height:1.6; margin-bottom:12px;">
-            <strong>Ideal size:</strong> 240&times;80 px (displayed at 120&times;40 px, 2&times; for sharp screens)<br>
+            <strong>Ideal size:</strong> 160&times;160 px or wider (displayed up to 160&times;80 px; 2&times; for sharp screens)<br>
             <strong>Format:</strong> PNG with transparent background recommended<br>
             <strong>Accepted:</strong> PNG, JPG, GIF, WebP &nbsp;&middot;&nbsp; <strong>Max size:</strong> 2 MB
           </p>
@@ -1262,8 +1262,10 @@
             body: JSON.stringify({ image: e.target.result }),
           });
           if (!res.ok) {
-            const err = await res.json();
-            throw new Error(err.error || 'Upload failed');
+            const text = await res.text();
+            let msg = 'Upload failed';
+            try { msg = JSON.parse(text).error || msg; } catch (_) { /* non-JSON error body */ }
+            throw new Error(msg);
           }
           // Cache-bust so the browser reloads the updated file
           logoPreview.src = `/images/logo.png?t=${Date.now()}`;
