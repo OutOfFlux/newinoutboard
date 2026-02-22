@@ -9,7 +9,13 @@
       "Bash(curl:*)",
       "Bash(python -m json.tool:*)",
       "Bash(python:*)",
-      "Bash(git -C /home/mdraper/code/newinoutboard diff)"
+      "Bash(git -C /home/mdraper/code/newinoutboard diff)",
+      "Bash(git -C /home/mdraper/code/newinoutboard log main..codex-test --oneline)",
+      "Bash(git -C /home/mdraper/code/newinoutboard diff main...codex-test)",
+      "Bash(git -C /home/mdraper/code/newinoutboard branch -a)",
+      "Bash(git -C /home/mdraper/code/newinoutboard diff main...codex-test --stat)",
+      "Bash(git -C /home/mdraper/code/newinoutboard diff main...codex-test -- cookies.txt server.js)",
+      "Bash(git -C /home/mdraper/code/newinoutboard diff main...codex-test -- public/admin.html)"
     ]
   }
 }
