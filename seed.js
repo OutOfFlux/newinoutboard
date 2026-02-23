@@ -6,38 +6,61 @@ const db = getDb();
 
 // Clear existing data
 db.exec('DELETE FROM employees');
+db.exec('DELETE FROM vehicles');
+
+const vehicleList = [
+  'X-Wing Starfighter',
+  'Millennium Falcon',
+  'TIE Fighter',
+  'AT-AT Walker',
+  'Slave I',
+  'Lambda-class Shuttle',
+  'Y-Wing Bomber',
+  'Snowspeeder',
+  'TIE Interceptor',
+  'B-Wing Fighter',
+];
+
+const insertVehicle = db.prepare('INSERT INTO vehicles (name) VALUES (?)');
+const vehicleIds = {};
+for (const v of vehicleList) {
+  const result = insertVehicle.run(v);
+  vehicleIds[v] = result.lastInsertRowid;
+}
+
+const V = vehicleIds;
 
 const employees = [
-  // Engineering
-  { name: 'Alice Johnson', department: 'Engineering', status: 'IN', comment: '', estimated_return: '' },
-  { name: 'Bob Smith', department: 'Engineering', status: 'Away from Desk', comment: 'Grabbing coffee', estimated_return: '' },
-  { name: 'Carlos Rivera', department: 'Engineering', status: 'In Meeting', comment: 'Sprint planning', estimated_return: '10:30 AM' },
-  { name: 'Diana Chen', department: 'Engineering', status: 'Working Remotely', comment: 'Available on Slack', estimated_return: '' },
-  { name: 'Ethan Williams', department: 'Engineering', status: 'PTO', comment: 'Vacation', estimated_return: '2026-02-24' },
-  { name: 'Fiona Park', department: 'Engineering', status: 'IN', comment: '', estimated_return: '' },
-  { name: 'Greg Tanaka', department: 'Engineering', status: 'At Lunch', comment: '', estimated_return: '1:00 PM' },
+  // Jedi Order
+  { name: 'Luke Skywalker', department: 'Jedi Order', status: 'IN', comment: '', estimated_return: '', vehicle_id: V['X-Wing Starfighter'] },
+  { name: 'Obi-Wan Kenobi', department: 'Jedi Order', status: 'Away from Desk', comment: 'Grabbing blue milk', estimated_return: '', vehicle_id: V['Lambda-class Shuttle'] },
+  { name: 'Mace Windu', department: 'Jedi Order', status: 'In Meeting', comment: 'High Council session', estimated_return: '10:30 AM', vehicle_id: null },
+  { name: 'Ahsoka Tano', department: 'Jedi Order', status: 'Working Remotely', comment: 'Available on hologram', estimated_return: '', vehicle_id: V['Y-Wing Bomber'] },
+  { name: 'Yoda', department: 'Jedi Order', status: 'PTO', comment: 'Meditating on Dagobah', estimated_return: '2026-02-24', vehicle_id: null },
+  { name: 'Kit Fisto', department: 'Jedi Order', status: 'IN', comment: '', estimated_return: '', vehicle_id: V['X-Wing Starfighter'] },
+  { name: 'Plo Koon', department: 'Jedi Order', status: 'At Lunch', comment: '', estimated_return: '1:00 PM', vehicle_id: V['Y-Wing Bomber'] },
 
-  // Sales
-  { name: 'Hannah Lee', department: 'Sales', status: 'IN', comment: 'At desk', estimated_return: '' },
-  { name: 'Ian Foster', department: 'Sales', status: 'OUT', comment: 'Client visit', estimated_return: '3:00 PM' },
-  { name: 'Julia Martinez', department: 'Sales', status: 'In Meeting', comment: 'Quarterly review', estimated_return: '11:00 AM' },
-  { name: 'Kevin Brooks', department: 'Sales', status: 'On Break', comment: '', estimated_return: '' },
-  { name: 'Laura Kim', department: 'Sales', status: 'IN', comment: '', estimated_return: '' },
-  { name: 'Mike O\'Brien', department: 'Sales', status: 'Sick', comment: 'Out today', estimated_return: '2026-02-18' },
+  // Sith Affairs
+  { name: 'Darth Vader', department: 'Sith Affairs', status: 'IN', comment: 'At desk, breathing loudly', estimated_return: '', vehicle_id: V['TIE Fighter'] },
+  { name: 'Emperor Palpatine', department: 'Sith Affairs', status: 'OUT', comment: 'Senate visit', estimated_return: '3:00 PM', vehicle_id: V['Lambda-class Shuttle'] },
+  { name: 'Count Dooku', department: 'Sith Affairs', status: 'In Meeting', comment: 'Separatist review', estimated_return: '11:00 AM', vehicle_id: null },
+  { name: 'Darth Maul', department: 'Sith Affairs', status: 'On Break', comment: '', estimated_return: '', vehicle_id: V['TIE Interceptor'] },
+  { name: 'Asajj Ventress', department: 'Sith Affairs', status: 'IN', comment: '', estimated_return: '', vehicle_id: V['TIE Fighter'] },
+  { name: 'Grand Moff Tarkin', department: 'Sith Affairs', status: 'Sick', comment: 'Out today', estimated_return: '2026-02-18', vehicle_id: V['AT-AT Walker'] },
 
-  // Operations
-  { name: 'Nina Patel', department: 'Operations', status: 'IN', comment: '', estimated_return: '' },
-  { name: 'Oscar Davis', department: 'Operations', status: 'IN', comment: '', estimated_return: '' },
-  { name: 'Priya Sharma', department: 'Operations', status: 'Away from Desk', comment: 'Mail room', estimated_return: '' },
-  { name: 'Quinn Murphy', department: 'Operations', status: 'At Lunch', comment: '', estimated_return: '12:30 PM' },
-  { name: 'Rachel Wong', department: 'Operations', status: 'PTO', comment: 'Family leave', estimated_return: '2026-03-03' },
-  { name: 'Sam Turner', department: 'Operations', status: 'IN', comment: 'Front desk', estimated_return: '' },
-  { name: 'Tina Gonzalez', department: 'Operations', status: 'Working Remotely', comment: 'Reachable by email', estimated_return: '' },
+  // Rebel Operations
+  { name: 'Han Solo', department: 'Rebel Operations', status: 'IN', comment: '', estimated_return: '', vehicle_id: V['Millennium Falcon'] },
+  { name: 'Princess Leia', department: 'Rebel Operations', status: 'IN', comment: '', estimated_return: '', vehicle_id: null },
+  { name: 'Lando Calrissian', department: 'Rebel Operations', status: 'Away from Desk', comment: 'Cloud City errands', estimated_return: '', vehicle_id: V['Millennium Falcon'] },
+  { name: 'Wedge Antilles', department: 'Rebel Operations', status: 'At Lunch', comment: '', estimated_return: '12:30 PM', vehicle_id: V['X-Wing Starfighter'] },
+  { name: 'Mon Mothma', department: 'Rebel Operations', status: 'PTO', comment: 'Family leave', estimated_return: '2026-03-03', vehicle_id: null },
+  { name: 'Chewbacca', department: 'Rebel Operations', status: 'IN', comment: 'Front desk', estimated_return: '', vehicle_id: V['Millennium Falcon'] },
+  { name: 'Admiral Ackbar', department: 'Rebel Operations', status: 'Working Remotely', comment: 'Reachable by holonet', estimated_return: '', vehicle_id: V['B-Wing Fighter'] },
 ];
 
 const insert = db.prepare(`
-  INSERT INTO employees (name, department, status, comment, estimated_return, last_changed)
-  VALUES (@name, @department, @status, @comment, @estimated_return, datetime('now'))
+  INSERT INTO employees (name, department, status, comment, estimated_return, last_changed, vehicle_id)
+  VALUES (@name, @department, @status, @comment, @estimated_return, datetime('now'), @vehicle_id)
 `);
 
 const insertMany = db.transaction((rows) => {
@@ -48,5 +71,5 @@ const insertMany = db.transaction((rows) => {
 
 insertMany(employees);
 
-console.log(`Seeded ${employees.length} employees.`);
+console.log(`Seeded ${vehicleList.length} vehicles and ${employees.length} employees.`);
 db.close();
