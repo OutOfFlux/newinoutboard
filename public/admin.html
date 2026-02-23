@@ -381,6 +381,95 @@
       color: var(--text-muted);
     }
 
+    /* Danger Zone */
+    .danger-zone {
+      border: 1px solid #fca5a5;
+      border-radius: 8px;
+      margin-top: 24px;
+      overflow: hidden;
+    }
+
+    .danger-zone-header {
+      background: #fef2f2;
+      padding: 12px 20px;
+      border-bottom: 1px solid #fca5a5;
+    }
+
+    [data-theme="dark"] .danger-zone-header {
+      background: #450a0a;
+    }
+
+    .danger-zone-header h2 {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: #b91c1c;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+    }
+
+    [data-theme="dark"] .danger-zone-header h2 {
+      color: #fca5a5;
+    }
+
+    .danger-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border-light);
+      background: var(--bg-card);
+      flex-wrap: wrap;
+    }
+
+    .danger-item:last-child { border-bottom: none; }
+
+    .danger-item-info { flex: 1; min-width: 180px; }
+
+    .danger-item-info strong {
+      display: block;
+      font-size: 0.875rem;
+      margin-bottom: 2px;
+    }
+
+    .danger-item-info span {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+    }
+
+    .btn-danger-solid {
+      background: #dc2626;
+      color: #fff;
+      padding: 7px 14px;
+      border-radius: 6px;
+      border: none;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background 0.15s;
+    }
+
+    .btn-danger-solid:hover { background: #b91c1c; }
+
+    /* Danger confirm dialog extras */
+    .danger-confirm-input {
+      width: 100%;
+      padding: 8px 12px;
+      border: 1px solid var(--border-input);
+      border-radius: 6px;
+      font-size: 0.875rem;
+      margin: 12px 0 16px;
+      background: var(--bg-input);
+      color: var(--text-primary);
+      outline: none;
+    }
+
+    .danger-confirm-input:focus {
+      border-color: #dc2626;
+      box-shadow: 0 0 0 2px rgba(220,38,38,0.15);
+    }
+
     /* Mobile */
     @media (max-width: 640px) {
       .container { padding: 12px; }
@@ -534,6 +623,34 @@
         </table>
       </div>
     </div>
+
+    <!-- Danger Zone -->
+    <div class="danger-zone">
+      <div class="danger-zone-header">
+        <h2>Danger Zone</h2>
+      </div>
+      <div class="danger-item">
+        <div class="danger-item-info">
+          <strong>Remove all employees</strong>
+          <span>Permanently delete every employee record from the board.</span>
+        </div>
+        <button class="btn-danger-solid" id="removeAllEmployeesBtn">Remove all employees</button>
+      </div>
+      <div class="danger-item">
+        <div class="danger-item-info">
+          <strong>Remove all vehicles</strong>
+          <span>Permanently delete every vehicle and clear all vehicle assignments.</span>
+        </div>
+        <button class="btn-danger-solid" id="removeAllVehiclesBtn">Remove all vehicles</button>
+      </div>
+      <div class="danger-item">
+        <div class="danger-item-info">
+          <strong>Remove all departments</strong>
+          <span>Permanently delete every department. Employees will keep their department label.</span>
+        </div>
+        <button class="btn-danger-solid" id="removeAllDeptsBtn">Remove all departments</button>
+      </div>
+    </div>
   </div>
 
   <!-- Delete confirmation dialog -->
@@ -544,6 +661,19 @@
       <div class="confirm-actions">
         <button class="btn btn-ghost" id="confirmCancel">Cancel</button>
         <button class="btn btn-danger" id="confirmDelete">Remove</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Danger Zone confirmation dialog -->
+  <div class="confirm-overlay" id="dangerOverlay">
+    <div class="confirm-dialog">
+      <h3 id="dangerTitle"></h3>
+      <p id="dangerMsg"></p>
+      <input type="text" class="danger-confirm-input" id="dangerInput" placeholder='Type REMOVE to confirm' autocomplete="off">
+      <div class="confirm-actions">
+        <button class="btn btn-ghost" id="dangerCancel">Cancel</button>
+        <button class="btn btn-danger" id="dangerConfirmBtn" disabled>Remove</button>
       </div>
     </div>
   </div>
@@ -1253,6 +1383,86 @@
         logoUploadMsg.textContent = '';
       };
       reader.readAsDataURL(file);
+    });
+
+    // --- Danger Zone ---
+    let dangerAction = null;
+    const dangerOverlay = document.getElementById('dangerOverlay');
+    const dangerTitle = document.getElementById('dangerTitle');
+    const dangerMsg = document.getElementById('dangerMsg');
+    const dangerInput = document.getElementById('dangerInput');
+    const dangerConfirmBtn = document.getElementById('dangerConfirmBtn');
+    const dangerCancel = document.getElementById('dangerCancel');
+
+    function openDangerConfirm(title, msg, action) {
+      dangerAction = action;
+      dangerTitle.textContent = title;
+      dangerMsg.innerHTML = msg;
+      dangerInput.value = '';
+      dangerConfirmBtn.disabled = true;
+      dangerOverlay.classList.add('show');
+      setTimeout(() => dangerInput.focus(), 50);
+    }
+
+    function closeDangerConfirm() {
+      dangerAction = null;
+      dangerOverlay.classList.remove('show');
+    }
+
+    dangerInput.addEventListener('input', () => {
+      dangerConfirmBtn.disabled = dangerInput.value.trim() !== 'REMOVE';
+    });
+
+    dangerInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeDangerConfirm();
+      if (e.key === 'Enter' && !dangerConfirmBtn.disabled) dangerConfirmBtn.click();
+    });
+
+    dangerCancel.addEventListener('click', closeDangerConfirm);
+    dangerOverlay.addEventListener('click', (e) => { if (e.target === dangerOverlay) closeDangerConfirm(); });
+
+    dangerConfirmBtn.addEventListener('click', async () => {
+      if (!dangerAction) return;
+      const action = dangerAction;
+      closeDangerConfirm();
+      try {
+        await action();
+      } catch (err) {
+        showToast('Operation failed', true);
+      }
+    });
+
+    document.getElementById('removeAllEmployeesBtn').addEventListener('click', () => {
+      openDangerConfirm(
+        'Remove all employees',
+        'This will permanently delete <strong>all employee records</strong>. This action cannot be undone.<br><br>Type <strong>REMOVE</strong> to confirm.',
+        async () => {
+          await apiDelete('/employees/all');
+          showToast('All employees removed');
+        }
+      );
+    });
+
+    document.getElementById('removeAllVehiclesBtn').addEventListener('click', () => {
+      openDangerConfirm(
+        'Remove all vehicles',
+        'This will permanently delete <strong>all vehicles</strong> and clear all vehicle assignments. This action cannot be undone.<br><br>Type <strong>REMOVE</strong> to confirm.',
+        async () => {
+          await apiDelete('/vehicles/all');
+          showToast('All vehicles removed');
+        }
+      );
+    });
+
+    document.getElementById('removeAllDeptsBtn').addEventListener('click', () => {
+      openDangerConfirm(
+        'Remove all departments',
+        'This will permanently delete <strong>all departments</strong>. Employees will keep their department label. This action cannot be undone.<br><br>Type <strong>REMOVE</strong> to confirm.',
+        async () => {
+          await apiDelete('/departments/all');
+          showToast('All departments removed');
+        }
+      );
     });
 
     logoUploadBtn.addEventListener('click', () => {

@@ -223,6 +223,18 @@ app.post('/employees', requireAuthApi, (req, res) => {
   }
 });
 
+// DELETE /employees/all — remove all employees
+app.delete('/employees/all', requireAuthApi, (req, res) => {
+  const db = getDb();
+  try {
+    db.prepare('DELETE FROM employees').run();
+    res.json({ ok: true });
+    broadcastInit();
+  } finally {
+    db.close();
+  }
+});
+
 // DELETE /employees/:id — remove an employee
 app.delete('/employees/:id', requireAuthApi, (req, res) => {
   const { id } = req.params;
@@ -292,6 +304,19 @@ app.put('/vehicles/:id', requireAuthApi, (req, res) => {
     const vehicle = db.prepare('SELECT * FROM vehicles WHERE id = ?').get(Number(id));
     broadcast({ type: 'vehicle_updated', vehicle });
     res.json(vehicle);
+  } finally {
+    db.close();
+  }
+});
+
+// DELETE /vehicles/all — remove all vehicles and clear assignments
+app.delete('/vehicles/all', requireAuthApi, (req, res) => {
+  const db = getDb();
+  try {
+    db.prepare('UPDATE employees SET vehicle_id = NULL').run();
+    db.prepare('DELETE FROM vehicles').run();
+    res.json({ ok: true });
+    broadcastInit();
   } finally {
     db.close();
   }
@@ -390,6 +415,18 @@ app.put('/departments/:id', requireAuthApi, (req, res) => {
   }
 });
 
+// DELETE /departments/all — remove all departments
+app.delete('/departments/all', requireAuthApi, (req, res) => {
+  const db = getDb();
+  try {
+    db.prepare('DELETE FROM departments').run();
+    res.json({ ok: true });
+    broadcastInit();
+  } finally {
+    db.close();
+  }
+});
+
 // DELETE /departments/:id — remove a department
 app.delete('/departments/:id', requireAuthApi, (req, res) => {
   const { id } = req.params;
@@ -417,6 +454,21 @@ function broadcast(data) {
       client.send(message);
     }
   });
+}
+
+function broadcastInit() {
+  const db = getDb();
+  try {
+    const employees = db.prepare(`${EMPLOYEE_SELECT} ORDER BY e.name ASC`).all();
+    const vehicles = db.prepare(`SELECT * FROM vehicles ORDER BY
+      CASE WHEN name GLOB 'T[0-9]*' THEN 1 ELSE 0 END,
+      CASE WHEN name GLOB 'T[0-9]*' THEN CAST(SUBSTR(name, 2) AS INTEGER) ELSE 0 END,
+      name ASC`).all();
+    const departments = db.prepare('SELECT * FROM departments ORDER BY name ASC').all();
+    broadcast({ type: 'init', employees, vehicles, departments });
+  } finally {
+    db.close();
+  }
 }
 
 wss.on('connection', (ws) => {
