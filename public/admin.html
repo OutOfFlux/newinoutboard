@@ -1104,11 +1104,11 @@
 
         // Status: Available or In Use
         const tdStatus = document.createElement('td');
-        const usedBy = employees.find(e => e.vehicle_id === vehicle.id);
+        const usedBy = employees.filter(e => e.vehicle_id === vehicle.id);
         const badge = document.createElement('span');
-        if (usedBy) {
+        if (usedBy.length > 0) {
           badge.className = 'badge yellow';
-          badge.textContent = `Out — ${usedBy.name}`;
+          badge.textContent = `Out — ${usedBy.map(e => e.name).join(', ')}`;
         } else {
           badge.className = 'badge green';
           badge.textContent = 'Available';

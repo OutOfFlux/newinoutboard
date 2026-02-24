@@ -1079,13 +1079,7 @@
       vehicles.forEach(v => {
         const opt = document.createElement('option');
         opt.value = v.id;
-        const takenBy = employees.find(e => e.vehicle_id === v.id && e.id !== emp.id);
-        if (takenBy) {
-          opt.textContent = `${v.name} — taken by ${takenBy.name}`;
-          opt.disabled = true;
-        } else {
-          opt.textContent = v.name;
-        }
+        opt.textContent = v.name;
         if (v.id === emp.vehicle_id) opt.selected = true;
         sel.appendChild(opt);
       });
