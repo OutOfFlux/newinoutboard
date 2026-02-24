@@ -548,6 +548,15 @@
       return 'red';
     }
 
+    // --- Helpers ---
+    function sortVehicles(a, b) {
+      const aTruck = /^T\d/i.test(a.name);
+      const bTruck = /^T\d/i.test(b.name);
+      if (aTruck !== bTruck) return aTruck ? 1 : -1;
+      if (aTruck) return parseInt(a.name.slice(1)) - parseInt(b.name.slice(1));
+      return a.name.localeCompare(b.name);
+    }
+
     // --- State ---
     let employees = [];
     let vehicles = [];
@@ -645,7 +654,7 @@
           render();
         } else if (data.type === 'vehicle_added') {
           vehicles.push(data.vehicle);
-          vehicles.sort((a, b) => a.name.localeCompare(b.name));
+          vehicles.sort(sortVehicles);
           render();
         } else if (data.type === 'vehicle_updated') {
           const idx = vehicles.findIndex(v => v.id === data.vehicle.id);

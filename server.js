@@ -245,7 +245,10 @@ app.delete('/employees/:id', requireAuthApi, (req, res) => {
 app.get('/vehicles', (req, res) => {
   const db = getDb();
   try {
-    const vehicles = db.prepare('SELECT * FROM vehicles ORDER BY name ASC').all();
+    const vehicles = db.prepare(`SELECT * FROM vehicles ORDER BY
+      CASE WHEN name GLOB 'T[0-9]*' THEN 1 ELSE 0 END,
+      CASE WHEN name GLOB 'T[0-9]*' THEN CAST(SUBSTR(name, 2) AS INTEGER) ELSE 0 END,
+      name ASC`).all();
     res.json(vehicles);
   } finally {
     db.close();
@@ -424,7 +427,10 @@ wss.on('connection', (ws) => {
   const db = getDb();
   try {
     const employees = db.prepare(`${EMPLOYEE_SELECT} ORDER BY e.name ASC`).all();
-    const vehicles = db.prepare('SELECT * FROM vehicles ORDER BY name ASC').all();
+    const vehicles = db.prepare(`SELECT * FROM vehicles ORDER BY
+      CASE WHEN name GLOB 'T[0-9]*' THEN 1 ELSE 0 END,
+      CASE WHEN name GLOB 'T[0-9]*' THEN CAST(SUBSTR(name, 2) AS INTEGER) ELSE 0 END,
+      name ASC`).all();
     const departments = db.prepare('SELECT * FROM departments ORDER BY name ASC').all();
     ws.send(JSON.stringify({ type: 'init', employees, vehicles, departments }));
   } finally {
