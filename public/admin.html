@@ -4,95 +4,177 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin — In/Out Board</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800;900&family=Instrument+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg-page: #f0f2f5;
-      --bg-card: #fff;
-      --bg-header: #f9fafb;
-      --bg-hover: #fafbfc;
-      --bg-editable-hover: #f3f4f6;
-      --bg-input: #fff;
-      --text-primary: #1a1a1a;
-      --text-secondary: #6b7280;
-      --border-main: #e5e7eb;
-      --border-light: #f0f0f0;
-      --border-input: #d1d5db;
-      --shadow: rgba(0,0,0,0.08);
-      --badge-green-bg: #dcfce7;
-      --badge-green-text: #15803d;
-      --badge-yellow-bg: #fef9c3;
-      --badge-yellow-text: #854d0e;
-      --badge-red-bg: #fee2e2;
-      --badge-red-text: #b91c1c;
-      --row-red-hover: #fecaca;
-      --link-color: #3b82f6;
-      --focus-border: #3b82f6;
+      --navy:        #0D2B52;
+      --navy-mid:    #1A3D6E;
+      --navy-light:  #E8EFF8;
+      --amber:       #F5A623;
+      --amber-dark:  #C47B0A;
+      --amber-light: #FFF4DC;
+      --slate:       #5A6E82;
+      --mid-gray:    #8896A7;
+      --light-gray:  #E2E8F0;
+      --cream:       #F4EFE6;
+      --dark:        #0F1923;
+      --white:       #FFFFFF;
+      --alert:       #C0392B;
+      --success:     #2A7D4F;
+
+      --bg-page:            var(--cream);
+      --bg-card:            var(--white);
+      --bg-header-main:     var(--navy);
+      --bg-header:          var(--navy-light);
+      --bg-hover:           #EEF3FA;
+      --bg-editable-hover:  #E8EFF8;
+      --bg-input:           var(--white);
+      --text-primary:       var(--dark);
+      --text-secondary:     var(--slate);
+      --text-muted:         var(--mid-gray);
+      --border-main:        var(--light-gray);
+      --border-light:       #EDF1F7;
+      --border-input:       #B8C8D8;
+      --shadow:             rgba(13,43,82,0.09);
+      --shadow-lg:          rgba(13,43,82,0.18);
+      --link-color:         var(--amber-dark);
+      --focus-border:       var(--amber);
+      --accent:             var(--amber);
+
+      --badge-green-bg:     #E6F7EE;
+      --badge-green-text:   var(--success);
+      --badge-yellow-bg:    var(--amber-light);
+      --badge-yellow-text:  var(--amber-dark);
+      --badge-red-bg:       #FEE8E6;
+      --badge-red-text:     var(--alert);
+      --row-red-hover:      #FAE3E0;
     }
 
     [data-theme="dark"] {
-      --bg-page: #111827;
-      --bg-card: #1f2937;
-      --bg-header: #283040;
-      --bg-hover: #283040;
-      --bg-editable-hover: #374151;
-      --bg-input: #374151;
-      --text-primary: #f3f4f6;
-      --text-secondary: #9ca3af;
-      --border-main: #374151;
-      --border-light: #2d3748;
-      --border-input: #4b5563;
-      --shadow: rgba(0,0,0,0.3);
-      --badge-green-bg: #064e3b;
-      --badge-green-text: #6ee7b7;
-      --badge-yellow-bg: #713f12;
-      --badge-yellow-text: #fde68a;
-      --badge-red-bg: #7f1d1d;
-      --badge-red-text: #fca5a5;
-      --row-red-hover: #4c1515;
-      --link-color: #60a5fa;
-      --focus-border: #60a5fa;
+      --bg-page:            #060c18;
+      --bg-card:            #0b1525;
+      --bg-header-main:     #071630;
+      --bg-header:          #091220;
+      --bg-hover:           #122030;
+      --bg-editable-hover:  #162840;
+      --bg-input:           #0e1a2e;
+      --text-primary:       #c8d9ec;
+      --text-secondary:     #5A6E82;
+      --text-muted:         #344d66;
+      --border-main:        #162840;
+      --border-light:       #0f1e32;
+      --border-input:       #1a3254;
+      --shadow:             rgba(0,0,0,0.5);
+      --shadow-lg:          rgba(0,0,0,0.65);
+      --link-color:         var(--amber);
+      --focus-border:       var(--amber);
+      --accent:             var(--amber);
+
+      --badge-green-bg:     #010f09;
+      --badge-green-text:   #10b981;
+      --badge-yellow-bg:    #0c0700;
+      --badge-yellow-text:  var(--amber);
+      --badge-red-bg:       #0c0101;
+      --badge-red-text:     #f87171;
+      --row-red-hover:      #130202;
+    }
+
+    [data-theme="dark"] {
+      background-image: radial-gradient(circle, rgba(22,40,64,0.4) 1px, transparent 1px);
+      background-size: 22px 22px;
     }
 
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-family: 'Instrument Sans', sans-serif;
       background: var(--bg-page);
       color: var(--text-primary);
       line-height: 1.5;
+      min-height: 100vh;
     }
 
-    .container {
+    /* ── App header ── */
+    .app-header {
+      background: var(--bg-header-main);
+      border-bottom: 2px solid var(--accent);
+      box-shadow: 0 2px 16px rgba(0,0,0,0.35);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .header-inner {
       max-width: 900px;
       margin: 0 auto;
-      padding: 20px;
-    }
-
-    .header {
+      padding: 10px 20px;
       display: flex;
       align-items: center;
-      justify-content: space-between;
+      gap: 12px;
       flex-wrap: wrap;
-      gap: 12px;
-      margin-bottom: 24px;
     }
 
-    .header h1 { font-size: 1.5rem; font-weight: 700; }
+    .header-logo {
+      max-height: 34px;
+      max-width: 100px;
+      object-fit: contain;
+    }
 
-    .header-links {
+    .header-title {
+      font-family: 'Big Shoulders Display', sans-serif;
+      font-size: 1.35rem;
+      font-weight: 700;
+      letter-spacing: 0.09em;
+      text-transform: uppercase;
+      flex: 1;
+      white-space: nowrap;
+      color: #ffffff;
+    }
+
+    .header-title span {
+      font-family: 'Instrument Sans', sans-serif;
+      font-size: 0.65rem;
+      font-weight: 400;
+      color: var(--accent);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      display: block;
+    }
+
+    .header-actions {
       display: flex;
-      gap: 12px;
       align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
     }
 
-    .header-links a {
-      color: var(--link-color);
+    .header-link {
+      color: rgba(200,220,240,0.8);
       text-decoration: none;
-      font-size: 0.875rem;
+      font-size: 0.8rem;
       font-weight: 500;
+      letter-spacing: 0.03em;
+      padding: 4px 8px;
+      border-radius: 3px;
+      transition: color 0.15s, background 0.15s;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.06);
     }
 
-    .header-links a:hover { text-decoration: underline; }
+    .header-link:hover {
+      color: #fff;
+      background: rgba(255,255,255,0.14);
+    }
+
+    .header-link.logout-btn {
+      background: none;
+      border: 1px solid rgba(255,255,255,0.12);
+      cursor: pointer;
+      font-family: 'Instrument Sans', sans-serif;
+      font-size: 0.8rem;
+    }
 
     /* Dark mode toggle */
     .dark-toggle {
@@ -100,9 +182,9 @@
       align-items: center;
       gap: 6px;
       cursor: pointer;
-      font-size: 0.875rem;
+      font-size: 0.8rem;
       font-weight: 500;
-      color: var(--text-secondary);
+      color: rgba(200,220,240,0.7);
       user-select: none;
     }
 
@@ -110,7 +192,7 @@
       width: 36px;
       height: 20px;
       border-radius: 10px;
-      background: var(--border-input);
+      background: rgba(255,255,255,0.18);
       position: relative;
       transition: background 0.2s;
     }
@@ -126,29 +208,59 @@
       transition: transform 0.2s;
     }
 
-    [data-theme="dark"] .dark-toggle-track {
-      background: #3b82f6;
+    [data-theme="dark"] .dark-toggle-track { background: var(--accent); }
+    [data-theme="dark"] .dark-toggle-track .thumb { transform: translateX(16px); }
+
+    /* ── Page container ── */
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px 20px;
     }
 
-    [data-theme="dark"] .dark-toggle-track .thumb {
-      transform: translateX(16px);
+    /* ── Section label ── */
+    .section-label {
+      font-family: 'Big Shoulders Display', sans-serif;
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      color: var(--text-secondary);
+      border-left: 3px solid var(--accent);
+      padding-left: 8px;
+      margin-bottom: 12px;
     }
 
-    /* Add employee form */
-    .add-form {
+    /* ── Cards / form panels ── */
+    .panel {
       background: var(--bg-card);
-      border-radius: 8px;
-      box-shadow: 0 1px 3px var(--shadow);
-      padding: 20px;
+      border-radius: 6px;
+      border: 1px solid var(--border-main);
+      box-shadow: 0 1px 4px var(--shadow);
       margin-bottom: 24px;
+      overflow: hidden;
     }
 
-    .add-form h2 {
-      font-size: 1rem;
-      font-weight: 600;
-      margin-bottom: 14px;
+    .panel-head {
+      padding: 14px 20px 12px;
+      border-bottom: 1px solid var(--border-main);
+      background: var(--bg-header);
     }
 
+    .panel-head h2 {
+      font-family: 'Big Shoulders Display', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--navy);
+    }
+
+    [data-theme="dark"] .panel-head h2 { color: var(--accent); }
+
+    .panel-body { padding: 20px; }
+
+    /* ── Form rows ── */
     .form-row {
       display: flex;
       flex-wrap: wrap;
@@ -165,90 +277,72 @@
     }
 
     .form-group label {
-      font-size: 0.75rem;
+      font-size: 0.72rem;
       font-weight: 600;
       color: var(--text-secondary);
       text-transform: uppercase;
-      letter-spacing: 0.05em;
+      letter-spacing: 0.08em;
     }
 
     .form-group input,
     .form-group select {
       padding: 8px 12px;
       border: 1px solid var(--border-input);
-      border-radius: 6px;
+      border-radius: 4px;
       font-size: 0.875rem;
+      font-family: 'Instrument Sans', sans-serif;
       background: var(--bg-input);
       color: var(--text-primary);
+      outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
     }
 
     .form-group input:focus,
     .form-group select:focus {
-      outline: none;
       border-color: var(--focus-border);
-      box-shadow: 0 0 0 2px rgba(59,130,246,0.15);
+      box-shadow: 0 0 0 2px color-mix(in srgb, var(--focus-border) 20%, transparent);
     }
 
+    /* ── Buttons ── */
     .btn {
-      padding: 8px 18px;
-      border: none;
-      border-radius: 6px;
-      font-size: 0.875rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 7px 16px;
+      border-radius: 4px;
+      font-family: 'Instrument Sans', sans-serif;
+      font-size: 0.83rem;
       font-weight: 600;
+      letter-spacing: 0.02em;
       cursor: pointer;
+      border: none;
+      transition: background 0.15s, opacity 0.15s, transform 0.1s;
       white-space: nowrap;
-      transition: background 0.15s, opacity 0.15s;
     }
 
-    .btn:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
+    .btn:active { transform: scale(0.98); }
+    .btn:disabled { opacity: 0.45; cursor: not-allowed; }
 
-    .btn-primary {
-      background: #3b82f6;
-      color: #fff;
-    }
-
-    .btn-primary:hover:not(:disabled) { background: #2563eb; }
+    .btn-primary { background: var(--amber); color: var(--navy); }
+    .btn-primary:hover:not(:disabled) { background: var(--amber-dark); color: #fff; }
 
     .btn-danger {
       background: var(--badge-red-bg);
       color: var(--badge-red-text);
+      border: 1px solid color-mix(in srgb, var(--badge-red-text) 25%, transparent);
     }
-
     .btn-danger:hover:not(:disabled) { background: var(--row-red-hover); }
 
     .btn-ghost {
       background: var(--bg-editable-hover);
       color: var(--text-primary);
+      border: 1px solid var(--border-main);
     }
-
     .btn-ghost:hover:not(:disabled) { background: var(--border-main); }
 
-    .btn-sm {
-      padding: 5px 12px;
-      font-size: 0.8rem;
-    }
+    .btn-sm { padding: 4px 10px; font-size: 0.78rem; }
 
-    /* Employee list */
-    .employee-list {
-      background: var(--bg-card);
-      border-radius: 8px;
-      box-shadow: 0 1px 3px var(--shadow);
-    }
-
-    .employee-list h2 {
-      font-size: 1rem;
-      font-weight: 600;
-      padding: 16px 20px 12px;
-    }
-
-    .emp-count {
-      font-weight: 400;
-      color: var(--text-secondary);
-    }
-
+    /* ── Tables ── */
     table {
       width: 100%;
       border-collapse: collapse;
@@ -260,9 +354,16 @@
       padding: 10px 14px;
       background: var(--bg-header);
       border-bottom: 2px solid var(--border-main);
-      font-weight: 600;
+      font-family: 'Big Shoulders Display', sans-serif;
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--navy);
       white-space: nowrap;
     }
+
+    [data-theme="dark"] thead th { color: var(--text-secondary); }
 
     tbody td {
       padding: 10px 14px;
@@ -270,9 +371,8 @@
       vertical-align: middle;
     }
 
-    tbody tr:hover {
-      background: var(--bg-hover);
-    }
+    tbody tr:last-child td { border-bottom: none; }
+    tbody tr:hover { background: var(--bg-hover); }
 
     .actions-cell {
       display: flex;
@@ -280,7 +380,7 @@
       flex-wrap: nowrap;
     }
 
-    /* Inline edit */
+    /* ── Inline edit ── */
     td input[type="text"],
     td select {
       width: 100%;
@@ -288,58 +388,64 @@
       border: 2px solid var(--focus-border);
       border-radius: 4px;
       font-size: 0.875rem;
+      font-family: 'Instrument Sans', sans-serif;
       outline: none;
       background: var(--bg-input);
       color: var(--text-primary);
     }
 
-    /* Badge */
+    /* ── Badges ── */
     .badge {
       display: inline-block;
-      padding: 2px 8px;
+      padding: 2px 9px;
       border-radius: 9999px;
       font-size: 0.75rem;
       font-weight: 600;
       white-space: nowrap;
+      letter-spacing: 0.02em;
     }
 
-    .badge.green { background: var(--badge-green-bg); color: var(--badge-green-text); }
+    .badge.green  { background: var(--badge-green-bg);  color: var(--badge-green-text); }
     .badge.yellow { background: var(--badge-yellow-bg); color: var(--badge-yellow-text); }
-    .badge.red { background: var(--badge-red-bg); color: var(--badge-red-text); }
+    .badge.red    { background: var(--badge-red-bg);    color: var(--badge-red-text); }
 
-    /* Toast notification */
+    /* ── Employee count ── */
+    .emp-count {
+      font-family: 'Instrument Sans', sans-serif;
+      font-size: 0.8rem;
+      font-weight: 400;
+      color: var(--text-secondary);
+      letter-spacing: 0;
+    }
+
+    /* ── Toast ── */
     .toast {
       position: fixed;
       bottom: 24px;
       right: 24px;
-      padding: 12px 20px;
-      background: #1a1a1a;
+      padding: 11px 18px;
+      background: var(--navy);
       color: #fff;
-      border-radius: 8px;
+      border-left: 3px solid var(--accent);
+      border-radius: 4px;
       font-size: 0.875rem;
       font-weight: 500;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      box-shadow: 0 4px 16px var(--shadow-lg);
       transform: translateY(80px);
       opacity: 0;
       transition: all 0.3s ease;
       z-index: 1000;
     }
 
-    .toast.show {
-      transform: translateY(0);
-      opacity: 1;
-    }
+    .toast.show { transform: translateY(0); opacity: 1; }
+    .toast.error { background: var(--alert); border-left-color: #fff; }
 
-    .toast.error {
-      background: #dc2626;
-    }
-
-    /* Delete confirmation */
+    /* ── Confirm overlay ── */
     .confirm-overlay {
       display: none;
       position: fixed;
       inset: 0;
-      background: rgba(0,0,0,0.35);
+      background: rgba(13,43,82,0.45);
       z-index: 999;
       align-items: center;
       justify-content: center;
@@ -349,22 +455,31 @@
 
     .confirm-dialog {
       background: var(--bg-card);
-      border-radius: 12px;
-      box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+      border-radius: 6px;
+      border-top: 3px solid var(--accent);
+      box-shadow: 0 8px 32px var(--shadow-lg);
       padding: 24px;
       max-width: 400px;
       width: 90%;
     }
 
     .confirm-dialog h3 {
+      font-family: 'Big Shoulders Display', sans-serif;
       font-size: 1rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--navy);
       margin-bottom: 8px;
     }
+
+    [data-theme="dark"] .confirm-dialog h3 { color: var(--accent); }
 
     .confirm-dialog p {
       font-size: 0.875rem;
       color: var(--text-secondary);
       margin-bottom: 20px;
+      line-height: 1.6;
     }
 
     .confirm-actions {
@@ -373,50 +488,51 @@
       justify-content: flex-end;
     }
 
-    /* Footer */
+    /* ── Footer ── */
     .page-footer {
       text-align: center;
       padding: 24px 0 12px;
-      font-size: 0.75rem;
+      font-size: 0.72rem;
       color: var(--text-muted);
+      letter-spacing: 0.04em;
     }
 
-    /* Danger Zone */
+    /* ── Danger Zone ── */
     .danger-zone {
-      border: 1px solid #fca5a5;
-      border-radius: 8px;
-      margin-top: 24px;
+      border: 1px solid #F5A49A;
+      border-radius: 6px;
+      margin-bottom: 24px;
       overflow: hidden;
     }
 
     .danger-zone-header {
-      background: #fef2f2;
-      padding: 12px 20px;
-      border-bottom: 1px solid #fca5a5;
+      background: #FEF2F2;
+      padding: 11px 20px;
+      border-bottom: 1px solid #F5A49A;
     }
 
     [data-theme="dark"] .danger-zone-header {
-      background: #450a0a;
+      background: #1a0505;
+      border-bottom-color: #4a0e0e;
     }
 
     .danger-zone-header h2 {
-      font-size: 0.8rem;
+      font-family: 'Big Shoulders Display', sans-serif;
+      font-size: 0.78rem;
       font-weight: 700;
-      color: #b91c1c;
+      color: var(--alert);
       text-transform: uppercase;
-      letter-spacing: 0.07em;
+      letter-spacing: 0.12em;
     }
 
-    [data-theme="dark"] .danger-zone-header h2 {
-      color: #fca5a5;
-    }
+    [data-theme="dark"] .danger-zone-header h2 { color: #f87171; }
 
     .danger-item {
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 16px;
-      padding: 16px 20px;
+      padding: 14px 20px;
       border-bottom: 1px solid var(--border-light);
       background: var(--bg-card);
       flex-wrap: wrap;
@@ -429,6 +545,7 @@
     .danger-item-info strong {
       display: block;
       font-size: 0.875rem;
+      font-weight: 600;
       margin-bottom: 2px;
     }
 
@@ -438,41 +555,44 @@
     }
 
     .btn-danger-solid {
-      background: #dc2626;
+      background: var(--alert);
       color: #fff;
-      padding: 7px 14px;
-      border-radius: 6px;
+      padding: 6px 14px;
+      border-radius: 4px;
       border: none;
-      font-size: 0.8rem;
+      font-size: 0.78rem;
       font-weight: 600;
+      font-family: 'Instrument Sans', sans-serif;
       cursor: pointer;
       white-space: nowrap;
       transition: background 0.15s;
     }
 
-    .btn-danger-solid:hover { background: #b91c1c; }
+    .btn-danger-solid:hover { background: #922B21; }
 
-    /* Danger confirm dialog extras */
+    /* Danger confirm input */
     .danger-confirm-input {
       width: 100%;
       padding: 8px 12px;
       border: 1px solid var(--border-input);
-      border-radius: 6px;
+      border-radius: 4px;
       font-size: 0.875rem;
+      font-family: 'Instrument Sans', sans-serif;
       margin: 12px 0 16px;
       background: var(--bg-input);
       color: var(--text-primary);
       outline: none;
+      transition: border-color 0.15s;
     }
 
     .danger-confirm-input:focus {
-      border-color: #dc2626;
-      box-shadow: 0 0 0 2px rgba(220,38,38,0.15);
+      border-color: var(--alert);
+      box-shadow: 0 0 0 2px rgba(192,57,43,0.15);
     }
 
     /* Mobile */
     @media (max-width: 640px) {
-      .container { padding: 12px; }
+      .container { padding: 14px 12px; }
       .form-group { min-width: 100%; }
       thead th, tbody td { padding: 8px 8px; }
       .col-status { display: none; }
@@ -480,71 +600,87 @@
   </style>
 </head>
 <body>
-  <div class="container">
-    <div class="header">
-      <h1>Admin</h1>
-      <div class="header-links">
+  <header class="app-header">
+    <div class="header-inner">
+      <img src="/images/logo.png" alt="CCPPD Logo" class="header-logo" onerror="this.style.display='none'">
+      <div class="header-title">
+        Admin
+        <span>In/Out Board</span>
+      </div>
+      <div class="header-actions">
         <label class="dark-toggle" id="darkToggle">
           <span class="dark-toggle-track"><span class="thumb"></span></span>
           <span>Dark</span>
         </label>
-        <a href="/">&larr; Back to Board</a>
+        <a href="/" class="header-link">&larr; Board</a>
         <form method="POST" action="/admin/logout" style="display:inline;">
-          <button type="submit" style="background:none; border:none; cursor:pointer; font-size:inherit; color:var(--link-color); padding:0; text-decoration:underline;">Logout</button>
+          <button type="submit" class="header-link logout-btn">Logout</button>
         </form>
       </div>
     </div>
+  </header>
+
+  <div class="container">
 
     <!-- Logo -->
-    <div class="add-form" style="margin-bottom:24px;">
-      <h2>Logo</h2>
-      <div style="display:flex; gap:24px; align-items:flex-start; flex-wrap:wrap; margin-top:4px;">
-        <div>
-          <img id="logoPreview" src="/images/logo.png" alt="Current logo"
-            style="display:block; max-height:80px; max-width:160px; width:auto; height:auto; object-fit:contain; border:1px solid var(--border-main); border-radius:4px; padding:6px; background:var(--bg-page);">
-          <p style="font-size:0.72rem; color:var(--text-muted); margin-top:4px; text-align:center;">Current logo</p>
-        </div>
-        <div style="flex:1; min-width:260px;">
-          <div class="form-group" style="margin-bottom:10px;">
-            <label for="logoFile">Replace Logo</label>
-            <input type="file" id="logoFile" accept="image/png,image/jpeg,image/gif,image/webp"
-              style="padding:4px 0; color:var(--text-primary);">
+    <div class="section-label">Logo</div>
+    <div class="panel" style="margin-bottom:24px;">
+      <div class="panel-body">
+        <div style="display:flex; gap:24px; align-items:flex-start; flex-wrap:wrap;">
+          <div>
+            <img id="logoPreview" src="/images/logo.png" alt="Current logo"
+              style="display:block; max-height:80px; max-width:160px; width:auto; height:auto; object-fit:contain; border:1px solid var(--border-main); border-radius:4px; padding:6px; background:var(--bg-page);">
+            <p style="font-size:0.7rem; color:var(--text-muted); margin-top:4px; text-align:center; letter-spacing:0.04em;">Current logo</p>
           </div>
-          <p style="font-size:0.8rem; color:var(--text-secondary); line-height:1.6; margin-bottom:12px;">
-            <strong>Ideal size:</strong> 160&times;160 px or wider (displayed up to 160&times;80 px; 2&times; for sharp screens)<br>
-            <strong>Format:</strong> PNG with transparent background recommended<br>
-            <strong>Accepted:</strong> PNG, JPG, GIF, WebP &nbsp;&middot;&nbsp; <strong>Max size:</strong> 2 MB
-          </p>
-          <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
-            <button id="logoUploadBtn" class="btn btn-primary" disabled>Upload Logo</button>
-            <span id="logoUploadMsg" style="font-size:0.8rem; color:var(--text-secondary);"></span>
+          <div style="flex:1; min-width:260px;">
+            <div class="form-group" style="margin-bottom:10px;">
+              <label for="logoFile">Replace Logo</label>
+              <input type="file" id="logoFile" accept="image/png,image/jpeg,image/gif,image/webp"
+                style="padding:4px 0; color:var(--text-primary);">
+            </div>
+            <p style="font-size:0.78rem; color:var(--text-secondary); line-height:1.6; margin-bottom:12px;">
+              <strong>Ideal size:</strong> 160&times;160 px or wider (displayed up to 160&times;80 px; 2&times; for sharp screens)<br>
+              <strong>Format:</strong> PNG with transparent background recommended<br>
+              <strong>Accepted:</strong> PNG, JPG, GIF, WebP &nbsp;&middot;&nbsp; <strong>Max size:</strong> 2 MB
+            </p>
+            <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+              <button id="logoUploadBtn" class="btn btn-primary" disabled>Upload Logo</button>
+              <span id="logoUploadMsg" style="font-size:0.78rem; color:var(--text-secondary);"></span>
+            </div>
           </div>
         </div>
       </div>
     </div>
 
     <!-- Add Employee -->
-    <div class="add-form">
-      <h2>Add Employee</h2>
-      <form id="addForm" class="form-row">
-        <div class="form-group">
-          <label for="addName">Name</label>
-          <input type="text" id="addName" placeholder="Jane Doe" required maxlength="100">
-        </div>
-        <div class="form-group">
-          <label for="addDept">Department</label>
-          <select id="addDept" required></select>
-        </div>
-        <div class="form-group" style="flex:0; min-width:auto;">
-          <label>&nbsp;</label>
-          <button type="submit" class="btn btn-primary">Add Employee</button>
-        </div>
-      </form>
+    <div class="section-label">Employees</div>
+    <div class="panel">
+      <div class="panel-head">
+        <h2>Add Employee</h2>
+      </div>
+      <div class="panel-body">
+        <form id="addForm" class="form-row">
+          <div class="form-group">
+            <label for="addName">Name</label>
+            <input type="text" id="addName" placeholder="Jane Doe" required maxlength="100">
+          </div>
+          <div class="form-group">
+            <label for="addDept">Department</label>
+            <select id="addDept" required></select>
+          </div>
+          <div class="form-group" style="flex:0; min-width:auto;">
+            <label>&nbsp;</label>
+            <button type="submit" class="btn btn-primary">Add Employee</button>
+          </div>
+        </form>
+      </div>
     </div>
 
     <!-- Employee List -->
-    <div class="employee-list">
-      <h2>Employees <span class="emp-count" id="empCount"></span></h2>
+    <div class="panel">
+      <div class="panel-head">
+        <h2>Employees <span class="emp-count" id="empCount"></span></h2>
+      </div>
       <div style="overflow-x:auto;">
         <table>
           <thead>
@@ -561,23 +697,30 @@
     </div>
 
     <!-- Add Vehicle -->
-    <div class="add-form" style="margin-top:24px;">
-      <h2>Add Vehicle</h2>
-      <form id="addVehicleForm" class="form-row">
-        <div class="form-group">
-          <label for="addVehicleName">Vehicle Name</label>
-          <input type="text" id="addVehicleName" placeholder="2022 Ford F-150" required maxlength="100">
-        </div>
-        <div class="form-group" style="flex:0; min-width:auto;">
-          <label>&nbsp;</label>
-          <button type="submit" class="btn btn-primary">Add Vehicle</button>
-        </div>
-      </form>
+    <div class="section-label">Vehicles</div>
+    <div class="panel">
+      <div class="panel-head">
+        <h2>Add Vehicle</h2>
+      </div>
+      <div class="panel-body">
+        <form id="addVehicleForm" class="form-row">
+          <div class="form-group">
+            <label for="addVehicleName">Vehicle Name</label>
+            <input type="text" id="addVehicleName" placeholder="2022 Ford F-150" required maxlength="100">
+          </div>
+          <div class="form-group" style="flex:0; min-width:auto;">
+            <label>&nbsp;</label>
+            <button type="submit" class="btn btn-primary">Add Vehicle</button>
+          </div>
+        </form>
+      </div>
     </div>
 
     <!-- Vehicle List -->
-    <div class="employee-list">
-      <h2>Vehicles <span class="emp-count" id="vehicleCount"></span></h2>
+    <div class="panel">
+      <div class="panel-head">
+        <h2>Vehicles <span class="emp-count" id="vehicleCount"></span></h2>
+      </div>
       <div style="overflow-x:auto;">
         <table>
           <thead>
@@ -593,23 +736,30 @@
     </div>
 
     <!-- Add Department -->
-    <div class="add-form" style="margin-top:24px;">
-      <h2>Add Department</h2>
-      <form id="addDeptForm" class="form-row">
-        <div class="form-group">
-          <label for="addDeptName">Department Name</label>
-          <input type="text" id="addDeptName" placeholder="Engineering" required maxlength="100">
-        </div>
-        <div class="form-group" style="flex:0; min-width:auto;">
-          <label>&nbsp;</label>
-          <button type="submit" class="btn btn-primary">Add Department</button>
-        </div>
-      </form>
+    <div class="section-label">Departments</div>
+    <div class="panel">
+      <div class="panel-head">
+        <h2>Add Department</h2>
+      </div>
+      <div class="panel-body">
+        <form id="addDeptForm" class="form-row">
+          <div class="form-group">
+            <label for="addDeptName">Department Name</label>
+            <input type="text" id="addDeptName" placeholder="Engineering" required maxlength="100">
+          </div>
+          <div class="form-group" style="flex:0; min-width:auto;">
+            <label>&nbsp;</label>
+            <button type="submit" class="btn btn-primary">Add Department</button>
+          </div>
+        </form>
+      </div>
     </div>
 
     <!-- Department List -->
-    <div class="employee-list">
-      <h2>Departments <span class="emp-count" id="deptCount"></span></h2>
+    <div class="panel">
+      <div class="panel-head">
+        <h2>Departments <span class="emp-count" id="deptCount"></span></h2>
+      </div>
       <div style="overflow-x:auto;">
         <table>
           <thead>
@@ -651,6 +801,7 @@
         <button class="btn-danger-solid" id="removeAllDeptsBtn">Remove all departments</button>
       </div>
     </div>
+
   </div>
 
   <!-- Delete confirmation dialog -->
@@ -1104,11 +1255,11 @@
 
         // Status: Available or In Use
         const tdStatus = document.createElement('td');
-        const usedBy = employees.filter(e => e.vehicle_id === vehicle.id);
+        const usedBy = employees.find(e => e.vehicle_id === vehicle.id);
         const badge = document.createElement('span');
-        if (usedBy.length > 0) {
+        if (usedBy) {
           badge.className = 'badge yellow';
-          badge.textContent = `Out — ${usedBy.map(e => e.name).join(', ')}`;
+          badge.textContent = `Out — ${usedBy.name}`;
         } else {
           badge.className = 'badge green';
           badge.textContent = 'Available';
