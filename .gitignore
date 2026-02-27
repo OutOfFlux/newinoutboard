@@ -21,3 +21,6 @@ npm-debug.log*
 # Images (persisted via volume mount in containers)
 public/images/*
 !public/images/.gitkeep
+
+# Claude
+CLAUDE.md
